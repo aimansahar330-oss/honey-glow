@@ -1,5 +1,36 @@
+# =========================
+# Dependencies
+# =========================
+node_modules/
+server/node_modules/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+server/.env
+server/.env.*
+
+# Optional example env files allow
+!.env.example
+!server/.env.example
+
+# =========================
+# Build Output
+# =========================
+dist/
+dist-ssr/
+
+# =========================
+# Prisma Generated Client
+# =========================
+server/generated/
+
+# =========================
 # Logs
-logs
+# =========================
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,39 +38,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# =========================
+# Local Files
+# =========================
 *.local
 
-# Editor directories and files
+# =========================
+# Editor / OS
+# =========================
 .vscode/*
 !.vscode/extensions.json
-.idea
+
+.idea/
 .DS_Store
+
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-
-# Dependencies
-node_modules/
-server/node_modules/
-
-# Environment secrets
-.env
-.env.*
-server/.env
-
-# Prisma generated client
-server/generated/
-
-# Build output
-dist/
-
-# Logs
-*.log
-
-# Editor / OS
-.DS_Store
