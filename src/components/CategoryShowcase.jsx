@@ -80,7 +80,7 @@ function CategoryShowcase() {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            {categories.map((category, index) => (
+            {categories.slice(0, 12).map((category, index) => (
               <CategoryCard
                 key={category.id}
                 category={category}
@@ -124,7 +124,7 @@ function CategoryCard({ category, index }) {
           <div className="absolute inset-0 bg-gradient-to-t from-[#4e2b32]/15 via-transparent to-white/5" />
 
           {/* NUMBER */}
-          <span className="absolute bottom-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full border border-white/60 bg-white/75 px-1.5 text-[7px] font-bold text-[#824351] shadow-sm backdrop-blur-md">
+          <span className="absolute bottom-2 right-6 flex h-6 min-w-6 items-center justify-center rounded-full border border-white/60 bg-yellow-600 px-1.5 text-[7px] font-bold text-white shadow-sm backdrop-blur-md">
             {String(index + 1).padStart(2, "0")}
           </span>
         </div>

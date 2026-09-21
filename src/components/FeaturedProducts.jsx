@@ -60,10 +60,16 @@ function FeaturedProducts() {
                 </span>
               </div>
 
-              <h2 className="font-beauty text-[34px] font-semibold leading-none tracking-[-0.035em] text-[#43262c] sm:text-[42px]">
+              <h2 className="font-beauty text-[34px] font-semibold leading-none tracking-[-0.035em] text-[#43262c] sm:text-[20px]">
                 Made to make you
                 <span className="ml-2 text-[#8b3e4d]">
                   glow
+                </span>
+              </h2>
+               <h2 className="font-beauty text-sm font-semibold leading-none tracking-[-0.035em] text-[#43262c] sm:text-[42px]">
+                Featured 
+                <span className="ml-2 text-[#8b3e4d]">
+                  Products
                 </span>
               </h2>
 

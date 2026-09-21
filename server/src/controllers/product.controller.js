@@ -190,7 +190,7 @@ export const getFeaturedProducts = async (
         createdAt: "desc",
       },
 
-      take: 8,
+      take: 15,
     });
 
     return res.status(200).json({
