@@ -9,7 +9,7 @@
     "createAdmin": "node scripts/createAdmin.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
-     "postinstall": "prisma generate"
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "",
