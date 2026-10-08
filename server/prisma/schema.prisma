@@ -220,7 +220,8 @@ model SignatureProduct {
   isActive  Boolean @default(true)
   isPrimary Boolean @default(false)
 
-  images SignatureProductImage[]
+  images  SignatureProductImage[]
+  reviews SignatureProductReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -237,10 +238,25 @@ model SignatureProductImage {
   position Int    @default(0)
 
   signatureProductId Int
-  signatureProduct   SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
+  signatureProduct SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@index([signatureProductId])
   @@map("signature_product_images")
+}
+
+model SignatureProductReview {
+  id      Int    @id @default(autoincrement())
+  name    String
+  rating  Int
+  comment String
+
+  signatureProductId Int
+  signatureProduct SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([signatureProductId])
+  @@map("signature_product_reviews")
 }

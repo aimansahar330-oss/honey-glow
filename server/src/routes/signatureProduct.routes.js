@@ -10,14 +10,17 @@ import {
   updateSignatureProduct,
 } from "../controllers/signatureProduct.controller.js";
 
+import {
+  addSignatureProductReview,
+  getSignatureProductReviews,
+} from "../controllers/signatureProductReview.controller.js";
+
 import { protectAdmin } from "../middleware/adminAuth.middleware.js";
 import upload from "../middleware/upload.middleware.js";
 
 const router = Router();
 
-/* ========================================
-   PUBLIC
-======================================== */
+/* PUBLIC */
 
 router.get(
   "/",
@@ -29,9 +32,19 @@ router.get(
   getPrimarySignatureProduct
 );
 
-/* ========================================
-   ADMIN
-======================================== */
+/* REVIEWS */
+
+router.get(
+  "/:id/reviews",
+  getSignatureProductReviews
+);
+
+router.post(
+  "/:id/reviews",
+  addSignatureProductReview
+);
+
+/* ADMIN */
 
 router.get(
   "/admin",
@@ -59,9 +72,7 @@ router.delete(
   deleteSignatureProduct
 );
 
-/* ========================================
-   PRODUCT DETAIL - KEEP LAST
-======================================== */
+/* DETAIL - KEEP LAST */
 
 router.get(
   "/:slug",

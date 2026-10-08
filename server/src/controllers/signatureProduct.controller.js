@@ -1170,3 +1170,175 @@ export const deleteSignatureProduct =
       next(error);
     }
   };
+
+  
+
+/* ========================================
+   GET REVIEWS
+======================================== */
+
+export const getSignatureProductReviews = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const signatureProductId =
+      Number(req.params.id);
+
+    if (
+      !Number.isInteger(
+        signatureProductId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product id.",
+      });
+    }
+
+    const reviews =
+      await prisma.signatureProductReview.findMany({
+        where: {
+          signatureProductId,
+        },
+
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+
+    const averageRating =
+      reviews.length > 0
+        ? reviews.reduce(
+            (total, review) =>
+              total +
+              Number(review.rating),
+            0
+          ) / reviews.length
+        : 0;
+
+    return res.status(200).json({
+      success: true,
+
+      averageRating: Number(
+        averageRating.toFixed(1)
+      ),
+
+      reviewCount:
+        reviews.length,
+
+      data: reviews,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* ========================================
+   ADD REVIEW
+======================================== */
+
+export const addSignatureProductReview = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const signatureProductId =
+      Number(req.params.id);
+
+    const {
+      name,
+      rating,
+      comment,
+    } = req.body;
+
+    if (
+      !Number.isInteger(
+        signatureProductId
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product id.",
+      });
+    }
+
+    if (!name?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required.",
+      });
+    }
+
+    const ratingNumber =
+      Number(rating);
+
+    if (
+      !Number.isInteger(
+        ratingNumber
+      ) ||
+      ratingNumber < 1 ||
+      ratingNumber > 5
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Rating must be between 1 and 5.",
+      });
+    }
+
+    if (!comment?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Review comment is required.",
+      });
+    }
+
+    const product =
+      await prisma.signatureProduct.findUnique({
+        where: {
+          id:
+            signatureProductId,
+        },
+      });
+
+    if (
+      !product ||
+      !product.isActive
+    ) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Signature product not found.",
+      });
+    }
+
+    const review =
+      await prisma.signatureProductReview.create({
+        data: {
+          name:
+            name.trim(),
+
+          rating:
+            ratingNumber,
+
+          comment:
+            comment.trim(),
+
+          signatureProductId,
+        },
+      });
+
+    return res.status(201).json({
+      success: true,
+      message:
+        "Review added successfully.",
+      data: review,
+    });
+  } catch (error) {
+    next(error);
+  }
+};

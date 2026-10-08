@@ -1,49 +1,125 @@
 import api from "./api";
 
-export const getSignatureProducts = async () => {
-  const { data } = await api.get("/signature-products");
+export const getSignatureProducts =
+  async () => {
+    const { data } =
+      await api.get(
+        "/signature-products"
+      );
 
-  return Array.isArray(data?.data)
-    ? data.data
-    : [];
-};
+    return Array.isArray(
+      data?.data
+    )
+      ? data.data
+      : [];
+  };
 
-export const getPrimarySignatureProduct = async () => {
-  const { data } = await api.get("/signature-products/primary");
+export const getPrimarySignatureProduct =
+  async () => {
+    const { data } =
+      await api.get(
+        "/signature-products/primary"
+      );
 
-  return data?.data || null;
-};
+    return data?.data || null;
+  };
 
-export const getAdminSignatureProducts = async () => {
-  const { data } = await api.get("/signature-products/admin");
+export const getSignatureProductBySlug =
+  async (slug) => {
+    const { data } =
+      await api.get(
+        `/signature-products/${slug}`
+      );
 
-  return Array.isArray(data?.data)
-    ? data.data
-    : [];
-};
+    return data?.data || null;
+  };
 
-export const createSignatureProduct = async (formData) => {
-  const { data } = await api.post("/signature-products", formData);
+export const getSignatureProductReviews =
+  async (id) => {
+    const { data } =
+      await api.get(
+        `/signature-products/${id}/reviews`
+      );
 
-  return data;
-};
+    return {
+      reviews:
+        Array.isArray(data?.data)
+          ? data.data
+          : [],
 
-export const updateSignatureProduct = async ({
-  id,
-  formData,
-}) => {
-  const { data } = await api.put(
-    `/signature-products/${id}`,
-    formData
-  );
+      averageRating:
+        Number(
+          data?.averageRating ||
+            0
+        ),
 
-  return data;
-};
+      reviewCount:
+        Number(
+          data?.reviewCount ||
+            0
+        ),
+    };
+  };
 
-export const deleteSignatureProduct = async (id) => {
-  const { data } = await api.delete(
-    `/signature-products/${id}`
-  );
+export const addSignatureProductReview =
+  async ({
+    id,
+    payload,
+  }) => {
+    const { data } =
+      await api.post(
+        `/signature-products/${id}/reviews`,
+        payload
+      );
 
-  return data;
-};
+    return data;
+  };
+
+export const getAdminSignatureProducts =
+  async () => {
+    const { data } =
+      await api.get(
+        "/signature-products/admin"
+      );
+
+    return Array.isArray(
+      data?.data
+    )
+      ? data.data
+      : [];
+  };
+
+export const createSignatureProduct =
+  async (formData) => {
+    const { data } =
+      await api.post(
+        "/signature-products",
+        formData
+      );
+
+    return data;
+  };
+
+export const updateSignatureProduct =
+  async ({
+    id,
+    formData,
+  }) => {
+    const { data } =
+      await api.put(
+        `/signature-products/${id}`,
+        formData
+      );
+
+    return data;
+  };
+
+export const deleteSignatureProduct =
+  async (id) => {
+    const { data } =
+      await api.delete(
+        `/signature-products/${id}`
+      );
+
+    return data;
+  };
