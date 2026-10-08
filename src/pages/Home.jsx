@@ -1,6 +1,5 @@
-
 import Hero from "../components/Hero";
-// import ProductCard from "../components/ProductCard";
+import SignatureShowcase from "../components/SignatureShowcase";
 import CategoryShowcase from "../components/CategoryShowcase";
 import FeaturedProducts from "../components/FeaturedProducts";
 
@@ -8,10 +7,12 @@ function Home() {
   return (
     <>
       <Hero />
-       <CategoryShowcase />
-        <FeaturedProducts />
 
-      {/* baqi home sections yahan */}
+      <SignatureShowcase />
+
+      <CategoryShowcase />
+
+      <FeaturedProducts />
     </>
   );
 }

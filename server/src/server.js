@@ -13,6 +13,8 @@ import orderRoutes from "./routes/order.routes.js";
 import customerRoutes from "./routes/customer.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import signatureProductRoutes from "./routes/signatureProduct.routes.js";
+import productVideoRoutes from "./routes/productVideo.routes.js";
 import {
   errorHandler,
   notFound,
@@ -67,6 +69,18 @@ app.get("/api/health", async (req, res, next) => {
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
+
+app.use(
+  "/api/signature-products",
+  signatureProductRoutes
+);
+
+app.use(
+  "/api/product-videos",
+  productVideoRoutes
+);
+
+
 app.use(
   "/api/customers",
   customerRoutes

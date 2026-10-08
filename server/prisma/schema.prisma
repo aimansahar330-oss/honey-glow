@@ -64,6 +64,9 @@ model Product {
   reviews    ProductReview[]
   orderItems OrderItem[]
 
+  video ProductVideo?
+
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -181,4 +184,63 @@ model Notification {
   @@index([type])
   @@index([createdAt])
   @@map("notifications")
+}
+
+
+model ProductVideo {
+  id Int @id @default(autoincrement())
+
+  videoUrl String
+
+  isActive Boolean @default(true)
+
+  productId Int     @unique
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("product_videos")
+}
+
+model SignatureProduct {
+  id               Int      @id @default(autoincrement())
+  name             String
+  slug             String   @unique
+  shortDescription String?
+
+  originalPrice Decimal  @db.Decimal(10, 2)
+  discountPrice Decimal? @db.Decimal(10, 2)
+
+  stock Int     @default(0)
+  sku   String? @unique
+
+  videoUrl String?
+
+  isActive  Boolean @default(true)
+  isPrimary Boolean @default(false)
+
+  images SignatureProductImage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([isPrimary])
+  @@map("signature_products")
+}
+
+model SignatureProductImage {
+  id       Int    @id @default(autoincrement())
+  imageUrl String
+  publicId String
+  position Int    @default(0)
+
+  signatureProductId Int
+  signatureProduct   SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([signatureProductId])
+  @@map("signature_product_images")
 }

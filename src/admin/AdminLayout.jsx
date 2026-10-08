@@ -14,6 +14,7 @@ import AdminNotifications from "./AdminNotifications";
 import {
   LayoutDashboard,
   LogOut,
+  Crown,
   Menu,
   Moon,
   Package,
@@ -41,6 +42,12 @@ const menuItems = [
     path: "/admin/products",
     icon: Package,
   },
+
+  {
+  name: "Signature Products",
+  path: "/admin/signature-products",
+  icon: Crown,
+},
 
   {
     name: "Categories",

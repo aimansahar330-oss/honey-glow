@@ -28,6 +28,7 @@ import AdminCategories from "./admin/AdminCategories";
 import AdminProducts from "./admin/AdminProducts";
 import AdminOrders from "./admin/AdminOrders";
 import AdminCustomers from "./admin/AdminCustomers";
+import AdminSignatureProducts from "./admin/AdminSignatureProducts";
 
 /* =========================
    PUBLIC LAYOUT
@@ -167,7 +168,13 @@ function App() {
               path="customers"
               element={<AdminCustomers />}
             />
+
+            <Route
+  path="signature-products"
+  element={<AdminSignatureProducts />}
+/>
           </Route>
+
         </Route>
 
         {/* =========================
