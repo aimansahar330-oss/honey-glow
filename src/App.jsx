@@ -16,6 +16,7 @@ import TrackOrder from "./pages/TrackOrder";
 import Categories from "./pages/Categories";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import SignatureCollection from "./pages/SignatureCollection";
 
 import ScrollToTop from "./components/ScrollToTop";
 
@@ -124,6 +125,11 @@ function App() {
             element={<TrackOrder />}
           />
 
+          <Route
+            path="/signature-collection"
+            element={<SignatureCollection />}
+          />
+
         </Route>
 
         {/* =========================
@@ -170,9 +176,9 @@ function App() {
             />
 
             <Route
-  path="signature-products"
-  element={<AdminSignatureProducts />}
-/>
+              path="signature-products"
+              element={<AdminSignatureProducts />}
+            />
           </Route>
 
         </Route>

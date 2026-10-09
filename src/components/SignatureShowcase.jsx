@@ -3,6 +3,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { Link } from "react-router-dom";
 import {
   useMutation,
   useQuery,
@@ -235,20 +236,32 @@ function SignatureShowcase() {
                   />
                 </span>
                 <p className="text-[7px] font-bold uppercase tracking-[0.24em] text-[#a9737c] sm:text-[8px]">
-                    KM  Signature
+                  KM  Signature
                 </p>
               </div>
               <h2 className="font-beauty mt-3 text-[34px] font-semibold leading-[0.94] tracking-[-0.04em] text-[#53383f] sm:text-[44px] lg:text-[50px]">
                 KM Cares
                 <span className="ml-2 text-[#b96f7c]">
-                   Signature Collection
+                  Special Signature Collection
                 </span>
               </h2>
               <p className="mt-3 max-w-[470px] text-[8px] leading-5 text-[#907c81] sm:text-[9px]">
                 Discover KM Cares&apos;s most special beauty essentials.
               </p>
+              <h2 className="font-beauty mt-3 text-[34px] font-semibold leading-[0.94] tracking-[-0.04em] text-[#53383f] sm:text-[44px] lg:text-[50px]">
+                Zafrani Cream
+              </h2>
             </div>
-          
+            <Link
+              to="/signature-collection"
+              className="group inline-flex w-fit items-center gap-3 rounded-full border border-[#dfc7cb] bg-white px-5 py-3 text-[8px] font-bold uppercase tracking-[0.15em] text-[#75434d] shadow-[0_10px_30px_rgba(101,68,75,0.08)] transition duration-300 hover:-translate-y-1 hover:border-[#a9616e] hover:bg-[#803a47] hover:text-white"
+            >
+              View All Signature
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f3e4e6] text-[#9f5967] transition duration-300 group-hover:translate-x-1 group-hover:bg-white/15 group-hover:text-white">
+                <ChevronRight size={11} />
+              </span>
+            </Link>
+
           </div>
           {/* =================================================
     MAIN LAYOUT
@@ -714,8 +727,8 @@ function SignatureMiniCard({
         product.name
       }
       className={`group relative h-[54px] w-[54px] shrink-0 transition-all duration-500 sm:h-[60px] sm:w-[60px] ${active
-          ? "-translate-y-0.5 scale-[1.05]"
-          : "opacity-65 hover:opacity-100"
+        ? "-translate-y-0.5 scale-[1.05]"
+        : "opacity-65 hover:opacity-100"
         }`}
     >
       {/* ACTIVE BORDER */}
