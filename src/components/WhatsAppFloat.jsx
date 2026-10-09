@@ -1,7 +1,7 @@
 import { FaWhatsapp } from "react-icons/fa";
 
 function WhatsAppFloat() {
-  const phoneNumber = "923001234567";
+  const phoneNumber = "+923137912736"; // Replace with your WhatsApp number
   const message = "Assalam o Alaikum, mujhe KM Cares ke products ke bare me maloomat chahiye.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 
