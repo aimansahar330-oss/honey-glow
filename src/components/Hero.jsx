@@ -70,7 +70,7 @@ function Hero() {
           </h1>
 
           {/* DESCRIPTION */}
-          <p className="mt-9 max-w-[450px] text-[12px] font-medium leading-6 text-[#634b4f] sm:text-[14px] sm:leading-7">
+          <p className="mt-9 max-w-[450px] text-[12px] font-medium leading-6 text-black sm:text-[14px] sm:leading-7">
             A little care can change the whole mood. Discover skincare,
             hair care, body care and everyday self-care favorites made
             for your softer, brighter moments.
