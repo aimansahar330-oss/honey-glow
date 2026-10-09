@@ -5,11 +5,21 @@ import {
   getAdminProfile,
 } from "../controllers/adminAuth.controller.js";
 
-import { protectAdmin } from "../middleware/adminAuth.middleware.js";
+import {
+  protectAdmin,
+} from "../middleware/adminAuth.middleware.js";
 
 const router = Router();
 
-router.post("/login", adminLogin);
-router.get("/me", protectAdmin, getAdminProfile);
+router.post(
+  "/login",
+  adminLogin
+);
+
+router.get(
+  "/profile",
+  protectAdmin,
+  getAdminProfile
+);
 
 export default router;

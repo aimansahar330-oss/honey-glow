@@ -93,7 +93,10 @@ app.use(
   "/api/admin/notifications",
   notificationRoutes
 );
-app.use("/api/admin/auth", adminAuthRoutes);
+app.use(
+  "/api/admin-auth",
+  adminAuthRoutes
+);
 
 
 app.use(notFound);

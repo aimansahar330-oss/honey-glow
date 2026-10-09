@@ -195,7 +195,7 @@ useEffect(() => {
                   />
 
                   <span className="text-[8px] font-bold uppercase tracking-[0.24em] text-[#9c6770]">
-                    The HoneyGlow Edit
+                    The KM care Edit
                   </span>
                 </div>
 
@@ -987,7 +987,7 @@ function ProductQuickView({
             {/* DESCRIPTION */}
             <p className="mt-4 max-w-[470px] text-[9px] leading-5 text-[#796267] sm:text-[10px]">
               {product.shortDescription ||
-                "A carefully selected HoneyGlow beauty essential."}
+                "A carefully selected KM care beauty essential."}
             </p>
 
             {/* STOCK */}

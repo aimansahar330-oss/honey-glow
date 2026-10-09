@@ -1,7 +1,5 @@
 import crypto from "crypto";
-
 import prisma from "../lib/prisma.js";
-
 import {
   deleteImage,
   uploadImage,
@@ -21,7 +19,17 @@ function createTrackingNumber() {
     .toString("hex")
     .toUpperCase();
 
-  return `HG-${time}-${random}`;
+  return `KM-${time}-${random}`;
+}
+
+/* =========================================
+   PRODUCT TYPE
+========================================= */
+
+function normalizeProductType(type) {
+  return type === "SIGNATURE"
+    ? "SIGNATURE"
+    : "REGULAR";
 }
 
 /* =========================================
@@ -60,8 +68,7 @@ export const createOrder = async (
       } catch {
         return res.status(400).json({
           success: false,
-          message:
-            "Invalid cart data.",
+          message: "Invalid cart data.",
         });
       }
     }
@@ -73,32 +80,28 @@ export const createOrder = async (
     if (!customerName?.trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          "Full name is required.",
+        message: "Full name is required.",
       });
     }
 
     if (!phone?.trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          "Phone number is required.",
+        message: "Phone number is required.",
       });
     }
 
     if (!address?.trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          "Delivery address is required.",
+        message: "Delivery address is required.",
       });
     }
 
     if (!city?.trim()) {
       return res.status(400).json({
         success: false,
-        message:
-          "City is required.",
+        message: "City is required.",
       });
     }
 
@@ -108,8 +111,7 @@ export const createOrder = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Your cart is empty.",
+        message: "Your cart is empty.",
       });
     }
 
@@ -130,8 +132,7 @@ export const createOrder = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Invalid payment method.",
+        message: "Invalid payment method.",
       });
     }
 
@@ -141,7 +142,6 @@ export const createOrder = async (
 
     /* =====================================
        WALLET PAYMENT VALIDATION
-       COD DOES NOT NEED THESE
     ===================================== */
 
     if (walletPayment) {
@@ -173,7 +173,7 @@ export const createOrder = async (
         });
       }
 
-      /* CHECK DUPLICATE TRANSACTION ID */
+      /* DUPLICATE TRANSACTION */
 
       const existingReference =
         await prisma.order.findUnique({
@@ -191,12 +191,15 @@ export const createOrder = async (
         });
       }
 
-      /* UPLOAD SCREENSHOT */
+      /* =====================================
+         CLOUDINARY UPLOAD
+         TRANSACTION KE BAHAR
+      ===================================== */
 
       const uploadResult =
         await uploadImage(
           req.file.buffer,
-          "honeyglow/payments"
+          "km-cares/payments"
         );
 
       uploadedPaymentProof = {
@@ -210,24 +213,41 @@ export const createOrder = async (
 
     /* =====================================
        NORMALIZE + MERGE CART ITEMS
+
+       REGULAR-1 aur SIGNATURE-1
+       dono separate rahenge.
     ===================================== */
 
     const itemMap = new Map();
 
     for (const item of items) {
-      const productId =
-        Number(item.productId);
+      const productType =
+        normalizeProductType(
+          item.productType
+        );
+
+      const rawId =
+        productType === "SIGNATURE"
+          ? (
+              item.signatureProductId ??
+              item.productId ??
+              item.id
+            )
+          : (
+              item.productId ??
+              item.id
+            );
+
+      const id =
+        Number(rawId);
 
       const quantity =
         Number(item.quantity);
 
       if (
-        !Number.isInteger(
-          productId
-        ) ||
-        !Number.isInteger(
-          quantity
-        ) ||
+        !Number.isInteger(id) ||
+        id <= 0 ||
+        !Number.isInteger(quantity) ||
         quantity < 1
       ) {
         return res.status(400).json({
@@ -237,24 +257,37 @@ export const createOrder = async (
         });
       }
 
-      itemMap.set(
-        productId,
-        (itemMap.get(productId) ||
-          0) + quantity
-      );
+      const key =
+        `${productType}-${id}`;
+
+      const existing =
+        itemMap.get(key);
+
+      if (existing) {
+        existing.quantity +=
+          quantity;
+      } else {
+        itemMap.set(key, {
+          productType,
+
+          productId:
+            productType === "REGULAR"
+              ? id
+              : null,
+
+          signatureProductId:
+            productType === "SIGNATURE"
+              ? id
+              : null,
+
+          quantity,
+        });
+      }
     }
 
     const normalizedItems =
       Array.from(
-        itemMap.entries()
-      ).map(
-        ([
-          productId,
-          quantity,
-        ]) => ({
-          productId,
-          quantity,
-        })
+        itemMap.values()
       );
 
     const deliveryCharge =
@@ -264,53 +297,144 @@ export const createOrder = async (
       ) || 200;
 
     /* =====================================
-       TRANSACTION
+       DATABASE TRANSACTION
     ===================================== */
 
     const order =
       await prisma.$transaction(
         async (tx) => {
-          const productIds =
-            normalizedItems.map(
+          /* =================================
+             SPLIT PRODUCT IDS
+          ================================= */
+
+          const regularItems =
+            normalizedItems.filter(
+              (item) =>
+                item.productType ===
+                "REGULAR"
+            );
+
+          const signatureItems =
+            normalizedItems.filter(
+              (item) =>
+                item.productType ===
+                "SIGNATURE"
+            );
+
+          const regularProductIds =
+            regularItems.map(
               (item) =>
                 item.productId
             );
 
-          /* GET PRODUCTS */
+          const signatureProductIds =
+            signatureItems.map(
+              (item) =>
+                item.signatureProductId
+            );
 
-          const products =
-            await tx.product.findMany({
-              where: {
-                id: {
-                  in: productIds,
-                },
+          /* =================================
+             GET REGULAR PRODUCTS
+          ================================= */
 
-                isActive: true,
-              },
-
-              include: {
-                images: {
-                  orderBy: {
-                    position: "asc",
-                  },
-
-                  take: 1,
-                },
-              },
-            });
+          let regularProducts = [];
 
           if (
-            products.length !==
-            productIds.length
+            regularProductIds.length >
+            0
+          ) {
+            regularProducts =
+              await tx.product.findMany({
+                where: {
+                  id: {
+                    in:
+                      regularProductIds,
+                  },
+
+                  isActive: true,
+                },
+
+                include: {
+                  images: {
+                    orderBy: {
+                      position: "asc",
+                    },
+
+                    take: 1,
+                  },
+                },
+              });
+          }
+
+          if (
+            regularProducts.length !==
+            regularProductIds.length
           ) {
             throw new Error(
-              "One or more products are no longer available."
+              "One or more regular products are no longer available."
             );
           }
 
-          const productMap =
+          /* =================================
+             GET SIGNATURE PRODUCTS
+          ================================= */
+
+          let signatureProducts =
+            [];
+
+          if (
+            signatureProductIds.length >
+            0
+          ) {
+            signatureProducts =
+              await tx.signatureProduct.findMany({
+                where: {
+                  id: {
+                    in:
+                      signatureProductIds,
+                  },
+
+                  isActive: true,
+                },
+
+                include: {
+                  images: {
+                    orderBy: {
+                      position: "asc",
+                    },
+
+                    take: 1,
+                  },
+                },
+              });
+          }
+
+          if (
+            signatureProducts.length !==
+            signatureProductIds.length
+          ) {
+            throw new Error(
+              "One or more signature products are no longer available."
+            );
+          }
+
+          /* =================================
+             MAP PRODUCTS
+          ================================= */
+
+          const regularProductMap =
             new Map(
-              products.map(
+              regularProducts.map(
+                (product) => [
+                  product.id,
+                  product,
+                ]
+              )
+            );
+
+          const signatureProductMap =
+            new Map(
+              signatureProducts.map(
                 (product) => [
                   product.id,
                   product,
@@ -322,24 +446,18 @@ export const createOrder = async (
 
           const orderItems = [];
 
-          /*
-            Low-stock notifications ko
-            transaction ke end mein create
-            karne ke liye collect karenge.
-          */
-          const lowStockProducts =
-            [];
+          const notifications = [];
 
           /* =================================
-             PROCESS PRODUCTS
+             PROCESS REGULAR PRODUCTS
           ================================= */
 
           for (
             const item of
-            normalizedItems
+            regularItems
           ) {
             const product =
-              productMap.get(
+              regularProductMap.get(
                 item.productId
               );
 
@@ -369,8 +487,14 @@ export const createOrder = async (
               item.quantity;
 
             orderItems.push({
+              productType:
+                "REGULAR",
+
               productId:
                 product.id,
+
+              signatureProductId:
+                null,
 
               productName:
                 product.name,
@@ -389,7 +513,7 @@ export const createOrder = async (
                 item.quantity,
             });
 
-            /* STOCK DECREASE */
+            /* ATOMIC STOCK DECREASE */
 
             const stockResult =
               await tx.product.updateMany({
@@ -412,41 +536,152 @@ export const createOrder = async (
               });
 
             if (
-              stockResult.count !==
-              1
+              stockResult.count !== 1
             ) {
               throw new Error(
                 `${product.name} does not have enough stock.`
               );
             }
 
-            /* ===============================
-               LOW STOCK CHECK
-            =============================== */
-
             const newStock =
               product.stock -
               item.quantity;
-
-            /*
-              Notification sirf tab:
-              previous stock > 5
-              new stock <= 5
-
-              Isse har order par duplicate
-              low-stock notification nahi aayegi.
-            */
 
             if (
               product.stock > 5 &&
               newStock <= 5
             ) {
-              lowStockProducts.push({
-                name:
-                  product.name,
+              notifications.push({
+                type:
+                  "LOW_STOCK",
 
-                stock:
-                  newStock,
+                title:
+                  "Low Stock",
+
+                message:
+                  `${product.name} only has ${newStock} item(s) left.`,
+
+                link:
+                  "/admin/products",
+              });
+            }
+          }
+
+          /* =================================
+             PROCESS SIGNATURE PRODUCTS
+          ================================= */
+
+          for (
+            const item of
+            signatureItems
+          ) {
+            const product =
+              signatureProductMap.get(
+                item.signatureProductId
+              );
+
+            if (!product) {
+              throw new Error(
+                "Signature product not found."
+              );
+            }
+
+            if (
+              product.stock <
+              item.quantity
+            ) {
+              throw new Error(
+                `${product.name} only has ${product.stock} item(s) left in stock.`
+              );
+            }
+
+            const price =
+              Number(
+                product.discountPrice ??
+                  product.originalPrice
+              );
+
+            subtotal +=
+              price *
+              item.quantity;
+
+            orderItems.push({
+              productType:
+                "SIGNATURE",
+
+              productId:
+                null,
+
+              signatureProductId:
+                product.id,
+
+              productName:
+                product.name,
+
+              productSlug:
+                product.slug,
+
+              imageUrl:
+                product.images?.[0]
+                  ?.imageUrl ||
+                null,
+
+              price,
+
+              quantity:
+                item.quantity,
+            });
+
+            /* SIGNATURE STOCK */
+
+            const stockResult =
+              await tx.signatureProduct.updateMany({
+                where: {
+                  id:
+                    product.id,
+
+                  stock: {
+                    gte:
+                      item.quantity,
+                  },
+                },
+
+                data: {
+                  stock: {
+                    decrement:
+                      item.quantity,
+                  },
+                },
+              });
+
+            if (
+              stockResult.count !== 1
+            ) {
+              throw new Error(
+                `${product.name} does not have enough stock.`
+              );
+            }
+
+            const newStock =
+              product.stock -
+              item.quantity;
+
+            if (
+              product.stock > 5 &&
+              newStock <= 5
+            ) {
+              notifications.push({
+                type:
+                  "LOW_STOCK",
+
+                title:
+                  "Signature Product Low Stock",
+
+                message:
+                  `${product.name} only has ${newStock} item(s) left.`,
+
+                link:
+                  "/admin/signature-products",
               });
             }
           }
@@ -545,85 +780,69 @@ export const createOrder = async (
             });
 
           /* =================================
-             NEW ORDER NOTIFICATION
+             ORDER NOTIFICATION
           ================================= */
 
-          await tx.notification.create({
-            data: {
-              type:
-                "NEW_ORDER",
+          notifications.unshift({
+            type:
+              "NEW_ORDER",
 
-              title:
-                "New Order",
+            title:
+              "New Order",
 
-              message:
-                `${customerName.trim()} placed order ${trackingNumber} for Rs. ${Number(
-                  total
-                ).toLocaleString()}.`,
+            message:
+              `${customerName.trim()} placed order ${trackingNumber} for Rs. ${Number(
+                total
+              ).toLocaleString()}.`,
 
-              link:
-                "/admin/orders",
-            },
+            link:
+              "/admin/orders",
           });
 
           /* =================================
-             PAYMENT VERIFICATION NOTIFICATION
+             PAYMENT NOTIFICATION
           ================================= */
 
           if (walletPayment) {
-            await tx.notification.create({
-              data: {
-                type:
-                  "PAYMENT_VERIFICATION",
+            notifications.push({
+              type:
+                "PAYMENT_VERIFICATION",
 
-                title:
-                  "Payment Verification",
+              title:
+                "Payment Verification",
 
-                message:
-                  `${
-                    paymentMethod ===
-                    "JAZZCASH"
-                      ? "JazzCash"
-                      : "EasyPaisa"
-                  } payment for ${trackingNumber} needs verification.`,
+              message:
+                `${
+                  paymentMethod ===
+                  "JAZZCASH"
+                    ? "JazzCash"
+                    : "EasyPaisa"
+                } payment for ${trackingNumber} needs verification.`,
 
-                link:
-                  "/admin/orders",
-              },
+              link:
+                "/admin/orders",
             });
           }
 
           /* =================================
-             LOW STOCK NOTIFICATIONS
+             CREATE ALL NOTIFICATIONS
+             SINGLE QUERY
           ================================= */
 
-          for (
-            const lowStockProduct of
-            lowStockProducts
+          if (
+            notifications.length > 0
           ) {
-            await tx.notification.create({
-              data: {
-                type:
-                  "LOW_STOCK",
-
-                title:
-                  "Low Stock",
-
-                message:
-                  `${lowStockProduct.name} only has ${lowStockProduct.stock} item(s) left.`,
-
-                link:
-                  "/admin/products",
-              },
+            await tx.notification.createMany({
+              data:
+                notifications,
             });
           }
 
-          /* IMPORTANT:
-             RETURN SAB NOTIFICATIONS
-             CREATE HONE KE BAAD
-          */
-
           return createdOrder;
+        },
+        {
+          maxWait: 15000,
+          timeout: 30000,
         }
       );
 
@@ -658,7 +877,9 @@ export const createOrder = async (
           ),
 
         total:
-          Number(order.total),
+          Number(
+            order.total
+          ),
 
         paymentMethod:
           order.paymentMethod,
@@ -674,15 +895,13 @@ export const createOrder = async (
       },
     });
   } catch (error) {
-    /*
-      Database transaction fail hui
-      lekin screenshot pehle upload
-      ho chuki thi to Cloudinary se
-      clean kar denge.
-    */
+    /* =====================================
+       CLOUDINARY CLEANUP
+    ===================================== */
 
     if (
-      uploadedPaymentProof?.publicId
+      uploadedPaymentProof
+        ?.publicId
     ) {
       try {
         await deleteImage(
@@ -696,6 +915,40 @@ export const createOrder = async (
           cleanupError
         );
       }
+    }
+
+    /* DUPLICATE UNIQUE FIELD */
+
+    if (
+      error?.code === "P2002"
+    ) {
+      return res.status(409).json({
+        success: false,
+
+        message:
+          "This payment reference or order value has already been used.",
+      });
+    }
+
+    /* TRANSACTION START ERROR */
+
+    if (
+      error?.code === "P2028" ||
+      error?.message?.includes(
+        "Unable to start a transaction"
+      )
+    ) {
+      console.error(
+        "ORDER TRANSACTION ERROR:",
+        error
+      );
+
+      return res.status(503).json({
+        success: false,
+
+        message:
+          "Database is temporarily busy. Please try placing your order again.",
+      });
     }
 
     next(error);
@@ -761,7 +1014,16 @@ export const trackOrder = async (
             select: {
               id: true,
 
+              productType: true,
+
+              productId: true,
+
+              signatureProductId:
+                true,
+
               productName: true,
+
+              productSlug: true,
 
               imageUrl: true,
 
@@ -974,6 +1236,7 @@ export const getAdminOrderById =
       ) {
         return res.status(400).json({
           success: false,
+
           message:
             "Invalid order ID.",
         });
@@ -1099,10 +1362,7 @@ export const updateOrderStatus =
         status,
       };
 
-      /*
-        COD delivered ho to
-        automatically PAID.
-      */
+      /* COD DELIVERED = PAID */
 
       if (
         status ===
@@ -1267,13 +1527,9 @@ export const deleteOrder = async (
       });
     }
 
-    /*
-      Order place hote waqt stock
-      decrease hua tha.
-
-      DELIVERED ke ilawa delete hone
-      par stock restore karenge.
-    */
+    /* =====================================
+       RESTORE STOCK + DELETE ORDER
+    ===================================== */
 
     await prisma.$transaction(
       async (tx) => {
@@ -1285,13 +1541,48 @@ export const deleteOrder = async (
             const item of
             order.items
           ) {
+            const productType =
+              normalizeProductType(
+                item.productType
+              );
+
+            /* SIGNATURE PRODUCT */
+
             if (
-              !item.productId
+              productType ===
+                "SIGNATURE" ||
+              item.signatureProductId
             ) {
+              if (
+                !item.signatureProductId
+              ) {
+                continue;
+              }
+
+              await tx.signatureProduct.updateMany({
+                where: {
+                  id:
+                    item.signatureProductId,
+                },
+
+                data: {
+                  stock: {
+                    increment:
+                      item.quantity,
+                  },
+                },
+              });
+
               continue;
             }
 
-            await tx.product.update({
+            /* REGULAR PRODUCT */
+
+            if (!item.productId) {
+              continue;
+            }
+
+            await tx.product.updateMany({
               where: {
                 id:
                   item.productId,
@@ -1307,23 +1598,21 @@ export const deleteOrder = async (
           }
         }
 
-        /*
-          OrderItem relation Cascade
-          hai to items automatically
-          delete ho jayenge.
-        */
-
         await tx.order.delete({
           where: {
             id,
           },
         });
+      },
+      {
+        maxWait: 15000,
+        timeout: 30000,
       }
     );
 
-    /*
-      Payment screenshot cleanup
-    */
+    /* =====================================
+       PAYMENT SCREENSHOT CLEANUP
+    ===================================== */
 
     if (
       order.paymentProofPublicId
@@ -1349,6 +1638,20 @@ export const deleteOrder = async (
         "Order deleted successfully.",
     });
   } catch (error) {
+    if (
+      error?.code === "P2028" ||
+      error?.message?.includes(
+        "Unable to start a transaction"
+      )
+    ) {
+      return res.status(503).json({
+        success: false,
+
+        message:
+          "Database is temporarily busy. Please try again.",
+      });
+    }
+
     next(error);
   }
 };

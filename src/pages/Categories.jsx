@@ -92,7 +92,7 @@ function Categories() {
 
             <div>
               <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[#a0777e]">
-                HoneyGlow Collection
+                KM cares Collection
               </p>
 
               <h2 className="font-beauty mt-1 text-[28px] font-semibold text-[#4b2d34] sm:text-[32px]">

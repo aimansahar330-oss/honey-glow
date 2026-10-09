@@ -3,8 +3,8 @@ import slugify from "slugify";
 import prisma from "../lib/prisma.js";
 
 import {
-  deleteImage,
-  uploadImage,
+    deleteImage,
+    uploadImage,
 } from "../utils/cloudinaryUpload.js";
 
 /* ========================================
@@ -12,99 +12,99 @@ import {
 ======================================== */
 
 function calculateDiscount(
-  originalPrice,
-  discountPrice
+    originalPrice,
+    discountPrice
 ) {
-  const original =
-    Number(originalPrice);
+    const original =
+        Number(originalPrice);
 
-  const discounted =
-    discountPrice !== null &&
-    discountPrice !== undefined
-      ? Number(discountPrice)
-      : null;
+    const discounted =
+        discountPrice !== null &&
+            discountPrice !== undefined
+            ? Number(discountPrice)
+            : null;
 
-  if (
-    !discounted ||
-    discounted >= original ||
-    original <= 0
-  ) {
-    return 0;
-  }
+    if (
+        !discounted ||
+        discounted >= original ||
+        original <= 0
+    ) {
+        return 0;
+    }
 
-  return Math.round(
-    ((original - discounted) /
-      original) *
-      100
-  );
+    return Math.round(
+        ((original - discounted) /
+            original) *
+        100
+    );
 }
 
 function formatProduct(product) {
-  const originalPrice =
-    Number(
-      product.originalPrice
-    );
+    const originalPrice =
+        Number(
+            product.originalPrice
+        );
 
-  const discountPrice =
-    product.discountPrice !==
-    null
-      ? Number(
-          product.discountPrice
-        )
-      : null;
+    const discountPrice =
+        product.discountPrice !==
+            null
+            ? Number(
+                product.discountPrice
+            )
+            : null;
 
-  return {
-    ...product,
+    return {
+        ...product,
 
-    originalPrice,
-
-    discountPrice,
-
-    discountPercent:
-      calculateDiscount(
         originalPrice,
-        discountPrice
-      ),
-  };
+
+        discountPrice,
+
+        discountPercent:
+            calculateDiscount(
+                originalPrice,
+                discountPrice
+            ),
+    };
 }
 
 async function createUniqueSlug(
-  name,
-  excludeId = null
+    name,
+    excludeId = null
 ) {
-  const baseSlug =
-    slugify(name, {
-      lower: true,
-      strict: true,
-      trim: true,
-    }) || "signature-product";
+    const baseSlug =
+        slugify(name, {
+            lower: true,
+            strict: true,
+            trim: true,
+        }) || "signature-product";
 
-  let slug =
-    baseSlug;
+    let slug =
+        baseSlug;
 
-  let counter = 2;
+    let counter = 2;
 
-  while (true) {
-    const existing =
-      await prisma.signatureProduct.findUnique({
-        where: {
-          slug,
-        },
-      });
+    while (true) {
+        const existing =
+            await prisma.signatureProduct.findUnique({
+                where: {
+                    slug,
+                },
+            });
 
-    if (
-      !existing ||
-      existing.id ===
-        excludeId
-    ) {
-      return slug;
+        if (
+            !existing ||
+            existing.id ===
+            excludeId
+        ) {
+            return slug;
+        }
+
+        slug =
+            `${baseSlug}-${counter}`;
+
+        counter += 1;
     }
-
-    slug =
-      `${baseSlug}-${counter}`;
-
-    counter += 1;
-  }
 }
 
 /* ========================================
@@ -112,1127 +112,1129 @@ async function createUniqueSlug(
 ======================================== */
 
 export const getSignatureProducts =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const products =
-        await prisma.signatureProduct.findMany({
-          where: {
-            isActive: true,
-          },
+    async (
+        req,
+        res,
+        next
+    ) => {
+        try {
+            const products =
+                await prisma.signatureProduct.findMany({
+                    where: {
+                        isActive: true,
+                    },
 
-          include: {
-            images: {
-              orderBy: {
-                position:
-                  "asc",
-              },
-            },
-          },
+                    include: {
+                        images: {
+                            orderBy: {
+                                position:
+                                    "asc",
+                            },
+                        },
+                    },
 
-          orderBy: [
-            {
-              isPrimary:
-                "desc",
-            },
+                    orderBy: [
+                        {
+                            isPrimary:
+                                "desc",
+                        },
 
-            {
-              createdAt:
-                "desc",
-            },
-          ],
-        });
+                        {
+                            createdAt:
+                                "desc",
+                        },
+                    ],
+                });
 
-      return res
-        .status(200)
-        .json({
-          success: true,
+            return res
+                .status(200)
+                .json({
+                    success: true,
 
-          count:
-            products.length,
+                    count:
+                        products.length,
 
-          data:
-            products.map(
-              formatProduct
-            ),
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
+                    data:
+                        products.map(
+                            formatProduct
+                        ),
+                });
+        } catch (error) {
+            next(error);
+        }
+    };
 
 /* ========================================
    PUBLIC - PRIMARY PRODUCT
 ======================================== */
 
 export const getPrimarySignatureProduct =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const product =
-        await prisma.signatureProduct.findFirst({
-          where: {
-            isActive: true,
-            isPrimary: true,
-          },
+    async (
+        req,
+        res,
+        next
+    ) => {
+        try {
+            const product =
+                await prisma.signatureProduct.findFirst({
+                    where: {
+                        isActive: true,
+                        isPrimary: true,
+                    },
 
-          include: {
-            images: {
-              orderBy: {
-                position:
-                  "asc",
-              },
-            },
-          },
+                    include: {
+                        images: {
+                            orderBy: {
+                                position:
+                                    "asc",
+                            },
+                        },
+                    },
 
-          orderBy: {
-            updatedAt:
-              "desc",
-          },
-        });
+                    orderBy: {
+                        updatedAt:
+                            "desc",
+                    },
+                });
 
-      return res
-        .status(200)
-        .json({
-          success: true,
+            return res
+                .status(200)
+                .json({
+                    success: true,
 
-          data: product
-            ? formatProduct(
-                product
-              )
-            : null,
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
+                    data: product
+                        ? formatProduct(
+                            product
+                        )
+                        : null,
+                });
+        } catch (error) {
+            next(error);
+        }
+    };
 
 /* ========================================
    PUBLIC - ONE PRODUCT
 ======================================== */
 
 export const getSignatureProductBySlug =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const product =
-        await prisma.signatureProduct.findFirst({
-          where: {
-            slug:
-              req.params.slug,
+    async (
+        req,
+        res,
+        next
+    ) => {
+        try {
+            const product =
+                await prisma.signatureProduct.findFirst({
+                    where: {
+                        slug:
+                            req.params.slug,
 
-            isActive: true,
-          },
+                        isActive: true,
+                    },
 
-          include: {
-            images: {
-              orderBy: {
-                position:
-                  "asc",
-              },
-            },
-          },
-        });
+                    include: {
+                        images: {
+                            orderBy: {
+                                position:
+                                    "asc",
+                            },
+                        },
+                    },
+                });
 
-      if (!product) {
-        return res
-          .status(404)
-          .json({
-            success: false,
+            if (!product) {
+                return res
+                    .status(404)
+                    .json({
+                        success: false,
 
-            message:
-              "Signature product not found.",
-          });
-      }
+                        message:
+                            "Signature product not found.",
+                    });
+            }
 
-      return res
-        .status(200)
-        .json({
-          success: true,
+            return res
+                .status(200)
+                .json({
+                    success: true,
 
-          data:
-            formatProduct(
-              product
-            ),
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
+                    data:
+                        formatProduct(
+                            product
+                        ),
+                });
+        } catch (error) {
+            next(error);
+        }
+    };
 
 /* ========================================
    ADMIN - ALL PRODUCTS
 ======================================== */
 
 export const getAdminSignatureProducts =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const products =
-        await prisma.signatureProduct.findMany({
-          include: {
-            images: {
-              orderBy: {
-                position:
-                  "asc",
-              },
-            },
-          },
+    async (
+        req,
+        res,
+        next
+    ) => {
+        try {
+            const products =
+                await prisma.signatureProduct.findMany({
+                    include: {
+                        images: {
+                            orderBy: {
+                                position:
+                                    "asc",
+                            },
+                        },
+                    },
 
-          orderBy: [
-            {
-              isPrimary:
-                "desc",
-            },
+                    orderBy: [
+                        {
+                            isPrimary:
+                                "desc",
+                        },
 
-            {
-              createdAt:
-                "desc",
-            },
-          ],
-        });
+                        {
+                            createdAt:
+                                "desc",
+                        },
+                    ],
+                });
 
-      return res
-        .status(200)
-        .json({
-          success: true,
+            return res
+                .status(200)
+                .json({
+                    success: true,
 
-          count:
-            products.length,
+                    count:
+                        products.length,
 
-          data:
-            products.map(
-              formatProduct
-            ),
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
+                    data:
+                        products.map(
+                            formatProduct
+                        ),
+                });
+        } catch (error) {
+            next(error);
+        }
+    };
 
 /* ========================================
    CREATE SIGNATURE PRODUCT
 ======================================== */
 
 export const createSignatureProduct =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    const uploadedImages =
-      [];
+    async (
+        req,
+        res,
+        next
+    ) => {
+        const uploadedImages =
+            [];
 
-    try {
-      const {
-        name,
-        shortDescription,
-        originalPrice,
-        discountPrice,
-        stock,
-        sku,
-        videoUrl,
-        isActive,
-        isPrimary,
-      } = req.body;
+        try {
+            const {
+                name,
+                shortDescription,
+                originalPrice,
+                discountPrice,
+                stock,
+                sku,
+                videoUrl,
+                isActive,
+                isPrimary,
+            } = req.body;
 
-      if (!name?.trim()) {
-        return res
-          .status(400)
-          .json({
-            success: false,
+            if (!name?.trim()) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-            message:
-              "Product name is required.",
-          });
-      }
-
-      const original =
-        Number(
-          originalPrice
-        );
-
-      const discounted =
-        discountPrice === "" ||
-        discountPrice ===
-          undefined
-          ? null
-          : Number(
-              discountPrice
-            );
-
-      if (
-        !Number.isFinite(
-          original
-        ) ||
-        original <= 0
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Original price must be greater than 0.",
-          });
-      }
-
-      if (
-        discounted !==
-          null &&
-        (
-          !Number.isFinite(
-            discounted
-          ) ||
-          discounted < 0 ||
-          discounted >=
-            original
-        )
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Discount price must be lower than original price.",
-          });
-      }
-
-      const stockNumber =
-        Number(stock);
-
-      if (
-        !Number.isInteger(
-          stockNumber
-        ) ||
-        stockNumber < 0
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Stock must be 0 or greater.",
-          });
-      }
-
-      if (
-        !req.files?.length
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "At least one product image is required.",
-          });
-      }
-
-      if (
-        req.files.length >
-        5
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Maximum 5 images are allowed.",
-          });
-      }
-
-      if (sku?.trim()) {
-        const existingSku =
-          await prisma.signatureProduct.findUnique({
-            where: {
-              sku:
-                sku.trim(),
-            },
-          });
-
-        if (existingSku) {
-          return res
-            .status(409)
-            .json({
-              success: false,
-
-              message:
-                "SKU already exists.",
-            });
-        }
-      }
-
-      const slug =
-        await createUniqueSlug(
-          name.trim()
-        );
-
-      for (
-        let index = 0;
-        index <
-        req.files.length;
-        index += 1
-      ) {
-        const result =
-          await uploadImage(
-            req.files[index]
-              .buffer,
-
-            "honeyglow/signature-products"
-          );
-
-        uploadedImages.push({
-          imageUrl:
-            result.secure_url,
-
-          publicId:
-            result.public_id,
-
-          position:
-            index,
-        });
-      }
-
-      const makePrimary =
-        isPrimary ===
-        "true";
-
-      const product =
-        await prisma.$transaction(
-          async (tx) => {
-            if (
-              makePrimary
-            ) {
-              await tx.signatureProduct.updateMany({
-                data: {
-                  isPrimary:
-                    false,
-                },
-              });
+                        message:
+                            "Product name is required.",
+                    });
             }
 
-            return tx.signatureProduct.create({
-              data: {
-                name:
-                  name.trim(),
+            const original =
+                Number(
+                    originalPrice
+                );
 
-                slug,
+            const discounted =
+                discountPrice === "" ||
+                    discountPrice ===
+                    undefined
+                    ? null
+                    : Number(
+                        discountPrice
+                    );
 
-                shortDescription:
-                  shortDescription?.trim() ||
-                  null,
+            if (
+                !Number.isFinite(
+                    original
+                ) ||
+                original <= 0
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-                originalPrice:
-                  original,
+                        message:
+                            "Original price must be greater than 0.",
+                    });
+            }
 
-                discountPrice:
-                  discounted,
+            if (
+                discounted !==
+                null &&
+                (
+                    !Number.isFinite(
+                        discounted
+                    ) ||
+                    discounted < 0 ||
+                    discounted >=
+                    original
+                )
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-                stock:
-                  stockNumber,
+                        message:
+                            "Discount price must be lower than original price.",
+                    });
+            }
 
-                sku:
-                  sku?.trim() ||
-                  null,
+            const stockNumber =
+                Number(stock);
 
-                videoUrl:
-                  videoUrl?.trim() ||
-                  null,
+            if (
+                !Number.isInteger(
+                    stockNumber
+                ) ||
+                stockNumber < 0
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-                isActive:
-                  isActive !==
-                  "false",
+                        message:
+                            "Stock must be 0 or greater.",
+                    });
+            }
 
-                isPrimary:
-                  makePrimary,
+            if (
+                !req.files?.length
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-                images: {
-                  create:
-                    uploadedImages,
-                },
-              },
+                        message:
+                            "At least one product image is required.",
+                    });
+            }
 
-              include: {
-                images: {
-                  orderBy: {
+            if (
+                req.files.length >
+                5
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+
+                        message:
+                            "Maximum 5 images are allowed.",
+                    });
+            }
+
+            if (sku?.trim()) {
+                const existingSku =
+                    await prisma.signatureProduct.findUnique({
+                        where: {
+                            sku:
+                                sku.trim(),
+                        },
+                    });
+
+                if (existingSku) {
+                    return res
+                        .status(409)
+                        .json({
+                            success: false,
+
+                            message:
+                                "SKU already exists.",
+                        });
+                }
+            }
+
+            const slug =
+                await createUniqueSlug(
+                    name.trim()
+                );
+
+            for (
+                let index = 0;
+                index <
+                req.files.length;
+                index += 1
+            ) {
+                const result =
+                    await uploadImage(
+                        req.files[index]
+                            .buffer,
+
+                        "honeyglow/signature-products"
+                    );
+
+                uploadedImages.push({
+                    imageUrl:
+                        result.secure_url,
+
+                    publicId:
+                        result.public_id,
+
                     position:
-                      "asc",
-                  },
-                },
-              },
-            });
-          }
-        );
+                        index,
+                });
+            }
 
-      return res
-        .status(201)
-        .json({
-          success: true,
+            const makePrimary =
+                isPrimary ===
+                "true";
 
-          message:
-            "Signature product created successfully.",
+            const product =
+                await prisma.$transaction(
+                    async (tx) => {
+                        if (
+                            makePrimary
+                        ) {
+                            await tx.signatureProduct.updateMany({
+                                data: {
+                                    isPrimary:
+                                        false,
+                                },
+                            });
+                        }
 
-          data:
-            formatProduct(
-              product
-            ),
-        });
-    } catch (error) {
-      await Promise.allSettled(
-        uploadedImages.map(
-          (image) =>
-            deleteImage(
-              image.publicId
-            )
-        )
-      );
+                        return tx.signatureProduct.create({
+                            data: {
+                                name:
+                                    name.trim(),
 
-      next(error);
-    }
-  };
+                                slug,
+
+                                shortDescription:
+                                    shortDescription?.trim() ||
+                                    null,
+
+                                originalPrice:
+                                    original,
+
+                                discountPrice:
+                                    discounted,
+
+                                stock:
+                                    stockNumber,
+
+                                sku:
+                                    sku?.trim() ||
+                                    null,
+
+                                videoUrl:
+                                    videoUrl?.trim() ||
+                                    null,
+
+                                isActive:
+                                    isActive !==
+                                    "false",
+
+                                isPrimary:
+                                    makePrimary,
+
+                                images: {
+                                    create:
+                                        uploadedImages,
+                                },
+                            },
+
+                            include: {
+                                images: {
+                                    orderBy: {
+                                        position:
+                                            "asc",
+                                    },
+                                },
+                            },
+                        });
+                    }
+                );
+
+            return res
+                .status(201)
+                .json({
+                    success: true,
+
+                    message:
+                        "Signature product created successfully.",
+
+                    data:
+                        formatProduct(
+                            product
+                        ),
+                });
+        } catch (error) {
+            await Promise.allSettled(
+                uploadedImages.map(
+                    (image) =>
+                        deleteImage(
+                            image.publicId
+                        )
+                )
+            );
+
+            next(error);
+        }
+    };
 
 /* ========================================
    UPDATE SIGNATURE PRODUCT
 ======================================== */
 
 export const updateSignatureProduct =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    const uploadedImages =
-      [];
+    async (
+        req,
+        res,
+        next
+    ) => {
+        const uploadedImages =
+            [];
 
-    try {
-      const id =
-        Number(
-          req.params.id
-        );
-
-      const product =
-        await prisma.signatureProduct.findUnique({
-          where: {
-            id,
-          },
-
-          include: {
-            images: true,
-          },
-        });
-
-      if (!product) {
-        return res
-          .status(404)
-          .json({
-            success: false,
-
-            message:
-              "Signature product not found.",
-          });
-      }
-
-      const {
-        name,
-        shortDescription,
-        originalPrice,
-        discountPrice,
-        stock,
-        sku,
-        videoUrl,
-        isActive,
-        isPrimary,
-        removeImageIds,
-      } = req.body;
-
-      let removeIds =
-        [];
-
-      if (
-        removeImageIds
-      ) {
         try {
-          const parsed =
-            JSON.parse(
-              removeImageIds
-            );
-
-          if (
-            Array.isArray(
-              parsed
-            )
-          ) {
-            removeIds =
-              parsed
-                .map(Number)
-                .filter(
-                  Number.isInteger
+            const id =
+                Number(
+                    req.params.id
                 );
-          }
-        } catch {
-          return res
-            .status(400)
-            .json({
-              success:
-                false,
 
-              message:
-                "Invalid image removal data.",
-            });
-        }
-      }
+            const product =
+                await prisma.signatureProduct.findUnique({
+                    where: {
+                        id,
+                    },
 
-      const removedImages =
-        product.images.filter(
-          (image) =>
-            removeIds.includes(
-              image.id
-            )
-        );
+                    include: {
+                        images: true,
+                    },
+                });
 
-      const remainingImages =
-        product.images.length -
-        removedImages.length;
+            if (!product) {
+                return res
+                    .status(404)
+                    .json({
+                        success: false,
 
-      const newFiles =
-        req.files || [];
+                        message:
+                            "Signature product not found.",
+                    });
+            }
 
-      if (
-        remainingImages +
-          newFiles.length >
-        5
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
+            const {
+                name,
+                shortDescription,
+                originalPrice,
+                discountPrice,
+                stock,
+                sku,
+                videoUrl,
+                isActive,
+                isPrimary,
+                removeImageIds,
+            } = req.body;
 
-            message:
-              "Maximum 5 images are allowed.",
-          });
-      }
+            let removeIds =
+                [];
 
-      if (
-        remainingImages +
-          newFiles.length <
-        1
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
+            if (
+                removeImageIds
+            ) {
+                try {
+                    const parsed =
+                        JSON.parse(
+                            removeImageIds
+                        );
 
-            message:
-              "At least one product image is required.",
-          });
-      }
+                    if (
+                        Array.isArray(
+                            parsed
+                        )
+                    ) {
+                        removeIds =
+                            parsed
+                                .map(Number)
+                                .filter(
+                                    Number.isInteger
+                                );
+                    }
+                } catch {
+                    return res
+                        .status(400)
+                        .json({
+                            success:
+                                false,
 
-      const updateData =
-        {};
+                            message:
+                                "Invalid image removal data.",
+                        });
+                }
+            }
 
-      if (
-        name !== undefined
-      ) {
-        if (
-          !name.trim()
-        ) {
-          return res
-            .status(400)
-            .json({
-              success:
-                false,
+            const removedImages =
+                product.images.filter(
+                    (image) =>
+                        removeIds.includes(
+                            image.id
+                        )
+                );
 
-              message:
-                "Product name cannot be empty.",
-            });
-        }
+            const remainingImages =
+                product.images.length -
+                removedImages.length;
 
-        updateData.name =
-          name.trim();
+            const newFiles =
+                req.files || [];
 
-        updateData.slug =
-          await createUniqueSlug(
-            name.trim(),
-            id
-          );
-      }
+            if (
+                remainingImages +
+                newFiles.length >
+                5
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
 
-      const finalOriginal =
-        originalPrice !==
-        undefined
-          ? Number(
-              originalPrice
-            )
-          : Number(
-              product.originalPrice
+                        message:
+                            "Maximum 5 images are allowed.",
+                    });
+            }
+
+            if (
+                remainingImages +
+                newFiles.length <
+                1
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+
+                        message:
+                            "At least one product image is required.",
+                    });
+            }
+
+            const updateData =
+                {};
+
+            if (
+                name !== undefined
+            ) {
+                if (
+                    !name.trim()
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            success:
+                                false,
+
+                            message:
+                                "Product name cannot be empty.",
+                        });
+                }
+
+                updateData.name =
+                    name.trim();
+
+                updateData.slug =
+                    await createUniqueSlug(
+                        name.trim(),
+                        id
+                    );
+            }
+
+            const finalOriginal =
+                originalPrice !==
+                    undefined
+                    ? Number(
+                        originalPrice
+                    )
+                    : Number(
+                        product.originalPrice
+                    );
+
+            let finalDiscount =
+                product.discountPrice !==
+                    null
+                    ? Number(
+                        product.discountPrice
+                    )
+                    : null;
+
+            if (
+                discountPrice !==
+                undefined
+            ) {
+                finalDiscount =
+                    discountPrice === ""
+                        ? null
+                        : Number(
+                            discountPrice
+                        );
+            }
+
+            if (
+                !Number.isFinite(
+                    finalOriginal
+                ) ||
+                finalOriginal <= 0
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+
+                        message:
+                            "Original price must be greater than 0.",
+                    });
+            }
+
+            if (
+                finalDiscount !==
+                null &&
+                (
+                    !Number.isFinite(
+                        finalDiscount
+                    ) ||
+                    finalDiscount < 0 ||
+                    finalDiscount >=
+                    finalOriginal
+                )
+            ) {
+                return res
+                    .status(400)
+                    .json({
+                        success: false,
+
+                        message:
+                            "Discount price must be lower than original price.",
+                    });
+            }
+
+            if (
+                originalPrice !==
+                undefined
+            ) {
+                updateData.originalPrice =
+                    finalOriginal;
+            }
+
+            if (
+                discountPrice !==
+                undefined
+            ) {
+                updateData.discountPrice =
+                    finalDiscount;
+            }
+
+            if (
+                shortDescription !==
+                undefined
+            ) {
+                updateData.shortDescription =
+                    shortDescription?.trim() ||
+                    null;
+            }
+
+            if (
+                videoUrl !==
+                undefined
+            ) {
+                updateData.videoUrl =
+                    videoUrl?.trim() ||
+                    null;
+            }
+
+            if (
+                stock !== undefined
+            ) {
+                const stockNumber =
+                    Number(stock);
+
+                if (
+                    !Number.isInteger(
+                        stockNumber
+                    ) ||
+                    stockNumber < 0
+                ) {
+                    return res
+                        .status(400)
+                        .json({
+                            success:
+                                false,
+
+                            message:
+                                "Stock must be 0 or greater.",
+                        });
+                }
+
+                updateData.stock =
+                    stockNumber;
+            }
+
+            if (
+                sku !== undefined
+            ) {
+                const normalizedSku =
+                    sku?.trim() ||
+                    null;
+
+                if (
+                    normalizedSku
+                ) {
+                    const existingSku =
+                        await prisma.signatureProduct.findFirst({
+                            where: {
+                                sku:
+                                    normalizedSku,
+
+                                NOT: {
+                                    id,
+                                },
+                            },
+                        });
+
+                    if (
+                        existingSku
+                    ) {
+                        return res
+                            .status(409)
+                            .json({
+                                success:
+                                    false,
+
+                                message:
+                                    "SKU already exists.",
+                            });
+                    }
+                }
+
+                updateData.sku =
+                    normalizedSku;
+            }
+
+            if (
+                isActive !==
+                undefined
+            ) {
+                updateData.isActive =
+                    isActive ===
+                    "true";
+            }
+
+            const makePrimary =
+                isPrimary ===
+                "true";
+
+            if (
+                isPrimary !==
+                undefined
+            ) {
+                updateData.isPrimary =
+                    makePrimary;
+            }
+
+            for (
+                let index = 0;
+                index <
+                newFiles.length;
+                index += 1
+            ) {
+                const result =
+                    await uploadImage(
+                        newFiles[index]
+                            .buffer,
+
+                        "honeyglow/signature-products"
+                    );
+
+                uploadedImages.push({
+                    imageUrl:
+                        result.secure_url,
+
+                    publicId:
+                        result.public_id,
+
+                    position:
+                        remainingImages +
+                        index,
+                });
+            }
+
+            await prisma.$transaction(
+                async (tx) => {
+                    if (
+                        makePrimary
+                    ) {
+                        await tx.signatureProduct.updateMany({
+                            where: {
+                                NOT: {
+                                    id,
+                                },
+                            },
+
+                            data: {
+                                isPrimary:
+                                    false,
+                            },
+                        });
+                    }
+
+                    await tx.signatureProduct.update({
+                        where: {
+                            id,
+                        },
+
+                        data:
+                            updateData,
+                    });
+
+                    if (
+                        removeIds.length
+                    ) {
+                        await tx.signatureProductImage.deleteMany({
+                            where: {
+                                signatureProductId:
+                                    id,
+
+                                id: {
+                                    in:
+                                        removeIds,
+                                },
+                            },
+                        });
+                    }
+
+                    if (
+                        uploadedImages.length
+                    ) {
+                        await tx.signatureProductImage.createMany({
+                            data:
+                                uploadedImages.map(
+                                    (image) => ({
+                                        ...image,
+
+                                        signatureProductId:
+                                            id,
+                                    })
+                                ),
+                        });
+                    }
+                }
             );
 
-      let finalDiscount =
-        product.discountPrice !==
-        null
-          ? Number(
-              product.discountPrice
-            )
-          : null;
+            await Promise.allSettled(
+                removedImages.map(
+                    (image) =>
+                        deleteImage(
+                            image.publicId
+                        )
+                )
+            );
 
-      if (
-        discountPrice !==
-        undefined
-      ) {
-        finalDiscount =
-          discountPrice === ""
-            ? null
-            : Number(
-                discountPrice
-              );
-      }
+            const updatedProduct =
+                await prisma.signatureProduct.findUnique({
+                    where: {
+                        id,
+                    },
 
-      if (
-        !Number.isFinite(
-          finalOriginal
-        ) ||
-        finalOriginal <= 0
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
+                    include: {
+                        images: {
+                            orderBy: {
+                                position:
+                                    "asc",
+                            },
+                        },
+                    },
+                });
 
-            message:
-              "Original price must be greater than 0.",
-          });
-      }
-
-      if (
-        finalDiscount !==
-          null &&
-        (
-          !Number.isFinite(
-            finalDiscount
-          ) ||
-          finalDiscount < 0 ||
-          finalDiscount >=
-            finalOriginal
-        )
-      ) {
-        return res
-          .status(400)
-          .json({
-            success: false,
-
-            message:
-              "Discount price must be lower than original price.",
-          });
-      }
-
-      if (
-        originalPrice !==
-        undefined
-      ) {
-        updateData.originalPrice =
-          finalOriginal;
-      }
-
-      if (
-        discountPrice !==
-        undefined
-      ) {
-        updateData.discountPrice =
-          finalDiscount;
-      }
-
-      if (
-        shortDescription !==
-        undefined
-      ) {
-        updateData.shortDescription =
-          shortDescription?.trim() ||
-          null;
-      }
-
-      if (
-        videoUrl !==
-        undefined
-      ) {
-        updateData.videoUrl =
-          videoUrl?.trim() ||
-          null;
-      }
-
-      if (
-        stock !== undefined
-      ) {
-        const stockNumber =
-          Number(stock);
-
-        if (
-          !Number.isInteger(
-            stockNumber
-          ) ||
-          stockNumber < 0
-        ) {
-          return res
-            .status(400)
-            .json({
-              success:
-                false,
-
-              message:
-                "Stock must be 0 or greater.",
-            });
-        }
-
-        updateData.stock =
-          stockNumber;
-      }
-
-      if (
-        sku !== undefined
-      ) {
-        const normalizedSku =
-          sku?.trim() ||
-          null;
-
-        if (
-          normalizedSku
-        ) {
-          const existingSku =
-            await prisma.signatureProduct.findFirst({
-              where: {
-                sku:
-                  normalizedSku,
-
-                NOT: {
-                  id,
-                },
-              },
-            });
-
-          if (
-            existingSku
-          ) {
             return res
-              .status(409)
-              .json({
-                success:
-                  false,
+                .status(200)
+                .json({
+                    success: true,
 
-                message:
-                  "SKU already exists.",
-              });
-          }
-        }
+                    message:
+                        "Signature product updated successfully.",
 
-        updateData.sku =
-          normalizedSku;
-      }
-
-      if (
-        isActive !==
-        undefined
-      ) {
-        updateData.isActive =
-          isActive ===
-          "true";
-      }
-
-      const makePrimary =
-        isPrimary ===
-        "true";
-
-      if (
-        isPrimary !==
-        undefined
-      ) {
-        updateData.isPrimary =
-          makePrimary;
-      }
-
-      for (
-        let index = 0;
-        index <
-        newFiles.length;
-        index += 1
-      ) {
-        const result =
-          await uploadImage(
-            newFiles[index]
-              .buffer,
-
-            "honeyglow/signature-products"
-          );
-
-        uploadedImages.push({
-          imageUrl:
-            result.secure_url,
-
-          publicId:
-            result.public_id,
-
-          position:
-            remainingImages +
-            index,
-        });
-      }
-
-      await prisma.$transaction(
-        async (tx) => {
-          if (
-            makePrimary
-          ) {
-            await tx.signatureProduct.updateMany({
-              where: {
-                NOT: {
-                  id,
-                },
-              },
-
-              data: {
-                isPrimary:
-                  false,
-              },
-            });
-          }
-
-          await tx.signatureProduct.update({
-            where: {
-              id,
-            },
-
-            data:
-              updateData,
-          });
-
-          if (
-            removeIds.length
-          ) {
-            await tx.signatureProductImage.deleteMany({
-              where: {
-                signatureProductId:
-                  id,
-
-                id: {
-                  in:
-                    removeIds,
-                },
-              },
-            });
-          }
-
-          if (
-            uploadedImages.length
-          ) {
-            await tx.signatureProductImage.createMany({
-              data:
+                    data:
+                        formatProduct(
+                            updatedProduct
+                        ),
+                });
+        } catch (error) {
+            await Promise.allSettled(
                 uploadedImages.map(
-                  (image) => ({
-                    ...image,
+                    (image) =>
+                        deleteImage(
+                            image.publicId
+                        )
+                )
+            );
 
-                    signatureProductId:
-                      id,
-                  })
-                ),
-            });
-          }
+            next(error);
         }
-      );
-
-      await Promise.allSettled(
-        removedImages.map(
-          (image) =>
-            deleteImage(
-              image.publicId
-            )
-        )
-      );
-
-      const updatedProduct =
-        await prisma.signatureProduct.findUnique({
-          where: {
-            id,
-          },
-
-          include: {
-            images: {
-              orderBy: {
-                position:
-                  "asc",
-              },
-            },
-          },
-        });
-
-      return res
-        .status(200)
-        .json({
-          success: true,
-
-          message:
-            "Signature product updated successfully.",
-
-          data:
-            formatProduct(
-              updatedProduct
-            ),
-        });
-    } catch (error) {
-      await Promise.allSettled(
-        uploadedImages.map(
-          (image) =>
-            deleteImage(
-              image.publicId
-            )
-        )
-      );
-
-      next(error);
-    }
-  };
+    };
 
 /* ========================================
    DELETE SIGNATURE PRODUCT
 ======================================== */
 
 export const deleteSignatureProduct =
-  async (
-    req,
-    res,
-    next
-  ) => {
-    try {
-      const id =
-        Number(
-          req.params.id
-        );
+    async (
+        req,
+        res,
+        next
+    ) => {
+        try {
+            const id =
+                Number(
+                    req.params.id
+                );
 
-      const product =
-        await prisma.signatureProduct.findUnique({
-          where: {
-            id,
-          },
+            const product =
+                await prisma.signatureProduct.findUnique({
+                    where: {
+                        id,
+                    },
 
-          include: {
-            images: true,
-          },
-        });
+                    include: {
+                        images: true,
+                    },
+                });
 
-      if (!product) {
-        return res
-          .status(404)
-          .json({
-            success: false,
+            if (!product) {
+                return res
+                    .status(404)
+                    .json({
+                        success: false,
 
-            message:
-              "Signature product not found.",
-          });
-      }
+                        message:
+                            "Signature product not found.",
+                    });
+            }
 
-      await prisma.signatureProduct.delete({
-        where: {
-          id,
-        },
-      });
+            await prisma.signatureProduct.delete({
+                where: {
+                    id,
+                },
+            });
 
-      await Promise.allSettled(
-        product.images.map(
-          (image) =>
-            deleteImage(
-              image.publicId
-            )
-        )
-      );
+            await Promise.allSettled(
+                product.images.map(
+                    (image) =>
+                        deleteImage(
+                            image.publicId
+                        )
+                )
+            );
 
-      return res
-        .status(200)
-        .json({
-          success: true,
+            return res
+                .status(200)
+                .json({
+                    success: true,
 
-          message:
-            "Signature product deleted successfully.",
-        });
-    } catch (error) {
-      next(error);
-    }
-  };
+                    message:
+                        "Signature product deleted successfully.",
+                });
+        } catch (error) {
+            next(error);
+        }
+    };
 
-  
+
 
 /* ========================================
    GET REVIEWS
 ======================================== */
 
 export const getSignatureProductReviews = async (
-  req,
-  res,
-  next
+    req,
+    res,
+    next
 ) => {
-  try {
-    const signatureProductId =
-      Number(req.params.id);
+    try {
+        const signatureProductId =
+            Number(req.params.id);
 
-    if (
-      !Number.isInteger(
-        signatureProductId
-      )
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid product id.",
-      });
+        if (
+            !Number.isInteger(
+                signatureProductId
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product id.",
+            });
+        }
+
+        const reviews =
+            await prisma.signatureProductReview.findMany({
+                where: {
+                    signatureProductId,
+                },
+
+                orderBy: {
+                    createdAt: "desc",
+                },
+            });
+
+        const averageRating =
+            reviews.length > 0
+                ? reviews.reduce(
+                    (total, review) =>
+                        total +
+                        Number(review.rating),
+                    0
+                ) / reviews.length
+                : 0;
+
+        return res.status(200).json({
+            success: true,
+
+            averageRating: Number(
+                averageRating.toFixed(1)
+            ),
+
+            reviewCount:
+                reviews.length,
+
+            reviews,
+        });
+
+
+    } catch (error) {
+        next(error);
     }
-
-    const reviews =
-      await prisma.signatureProductReview.findMany({
-        where: {
-          signatureProductId,
-        },
-
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
-
-    const averageRating =
-      reviews.length > 0
-        ? reviews.reduce(
-            (total, review) =>
-              total +
-              Number(review.rating),
-            0
-          ) / reviews.length
-        : 0;
-
-    return res.status(200).json({
-      success: true,
-
-      averageRating: Number(
-        averageRating.toFixed(1)
-      ),
-
-      reviewCount:
-        reviews.length,
-
-      data: reviews,
-    });
-  } catch (error) {
-    next(error);
-  }
 };
 
 /* ========================================
@@ -1240,105 +1242,105 @@ export const getSignatureProductReviews = async (
 ======================================== */
 
 export const addSignatureProductReview = async (
-  req,
-  res,
-  next
+    req,
+    res,
+    next
 ) => {
-  try {
-    const signatureProductId =
-      Number(req.params.id);
+    try {
+        const signatureProductId =
+            Number(req.params.id);
 
-    const {
-      name,
-      rating,
-      comment,
-    } = req.body;
+        const {
+            name,
+            rating,
+            comment,
+        } = req.body;
 
-    if (
-      !Number.isInteger(
-        signatureProductId
-      )
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid product id.",
-      });
+        if (
+            !Number.isInteger(
+                signatureProductId
+            )
+        ) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid product id.",
+            });
+        }
+
+        if (!name?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Name is required.",
+            });
+        }
+
+        const ratingNumber =
+            Number(rating);
+
+        if (
+            !Number.isInteger(
+                ratingNumber
+            ) ||
+            ratingNumber < 1 ||
+            ratingNumber > 5
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rating must be between 1 and 5.",
+            });
+        }
+
+        if (!comment?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Review comment is required.",
+            });
+        }
+
+        const product =
+            await prisma.signatureProduct.findUnique({
+                where: {
+                    id:
+                        signatureProductId,
+                },
+            });
+
+        if (
+            !product ||
+            !product.isActive
+        ) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Signature product not found.",
+            });
+        }
+
+        const review =
+            await prisma.signatureProductReview.create({
+                data: {
+                    name:
+                        name.trim(),
+
+                    rating:
+                        ratingNumber,
+
+                    comment:
+                        comment.trim(),
+
+                    signatureProductId,
+                },
+            });
+
+        return res.status(201).json({
+            success: true,
+            message:
+                "Review added successfully.",
+            data: review,
+        });
+    } catch (error) {
+        next(error);
     }
-
-    if (!name?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Name is required.",
-      });
-    }
-
-    const ratingNumber =
-      Number(rating);
-
-    if (
-      !Number.isInteger(
-        ratingNumber
-      ) ||
-      ratingNumber < 1 ||
-      ratingNumber > 5
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Rating must be between 1 and 5.",
-      });
-    }
-
-    if (!comment?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Review comment is required.",
-      });
-    }
-
-    const product =
-      await prisma.signatureProduct.findUnique({
-        where: {
-          id:
-            signatureProductId,
-        },
-      });
-
-    if (
-      !product ||
-      !product.isActive
-    ) {
-      return res.status(404).json({
-        success: false,
-        message:
-          "Signature product not found.",
-      });
-    }
-
-    const review =
-      await prisma.signatureProductReview.create({
-        data: {
-          name:
-            name.trim(),
-
-          rating:
-            ratingNumber,
-
-          comment:
-            comment.trim(),
-
-          signatureProductId,
-        },
-      });
-
-    return res.status(201).json({
-      success: true,
-      message:
-        "Review added successfully.",
-      data: review,
-    });
-  } catch (error) {
-    next(error);
-  }
 };

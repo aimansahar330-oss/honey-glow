@@ -12,7 +12,7 @@ function Hero() {
 
         <img
           src="/hero.jpg"
-          alt="HoneyGlow skincare collection"
+          alt="km cares skincare collection"
           loading="eager"
           fetchPriority="high"
           className="h-full w-full object-cover object-center lg:object-[center_48%]"
@@ -39,7 +39,7 @@ function Hero() {
 
             <div>
               <p className="text-[8px] font-bold uppercase tracking-[0.26em] text-[#78434c] sm:text-[9px]">
-                HoneyGlow Essentials
+                KM care Essentials
               </p>
 
               <div className="mt-1.5 h-px w-16 bg-gradient-to-r from-[#9d4b59] to-transparent" />
@@ -102,7 +102,7 @@ function Hero() {
           {/* SOCIAL LINKS */}
           <div className="mt-5 flex flex-wrap items-center gap-2.5 border-t border-[#955460]/20 pt-4 sm:mt-6 sm:gap-3 lg:mt-8">
             <span className="mr-1 text-[7px] font-bold uppercase tracking-[0.22em] text-[#826167] sm:mr-2 sm:text-[8px]">
-              Follow HoneyGlow
+              Follow KM Care
             </span>
 
             <SocialLink

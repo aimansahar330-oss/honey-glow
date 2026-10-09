@@ -8,24 +8,80 @@ import {
 
 const CartContext = createContext(null);
 
+const CART_STORAGE_KEY = "kmcares_cart_v2";
+const OLD_CART_STORAGE_KEY = "honeyglow_cart";
+
+function normalizeProductType(type) {
+  return type === "SIGNATURE"
+    ? "SIGNATURE"
+    : "REGULAR";
+}
+
+function createCartKey(id, productType) {
+  return `${normalizeProductType(productType)}-${id}`;
+}
+
+function normalizeCartItem(item) {
+  const productType =
+    item.productType === "SIGNATURE" ||
+    item.signatureProductId
+      ? "SIGNATURE"
+      : "REGULAR";
+
+  return {
+    ...item,
+    productType,
+    cartKey: createCartKey(
+      item.id,
+      productType
+    ),
+  };
+}
+
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => {
     try {
       const saved =
-        localStorage.getItem("honeyglow_cart");
+        localStorage.getItem(
+          CART_STORAGE_KEY
+        );
 
-      return saved
-        ? JSON.parse(saved)
-        : [];
+      if (!saved) {
+        return [];
+      }
+
+      const parsed =
+        JSON.parse(saved);
+
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      return parsed
+        .filter(
+          (item) =>
+            item &&
+            Number.isInteger(
+              Number(item.id)
+            )
+        )
+        .map(normalizeCartItem);
     } catch {
       return [];
     }
   });
 
+  /* REMOVE OLD HONEYGLOW CART */
+  useEffect(() => {
+    localStorage.removeItem(
+      OLD_CART_STORAGE_KEY
+    );
+  }, []);
+
   /* SAVE CART */
   useEffect(() => {
     localStorage.setItem(
-      "honeyglow_cart",
+      CART_STORAGE_KEY,
       JSON.stringify(cartItems)
     );
   }, [cartItems]);
@@ -35,52 +91,96 @@ export function CartProvider({ children }) {
     product,
     quantity = 1
   ) => {
-    if (!product) return;
+    if (!product) {
+      return;
+    }
+
+    const id =
+      Number(product.id);
+
+    if (
+      !Number.isInteger(id) ||
+      id <= 0
+    ) {
+      return;
+    }
+
+    const productType =
+      normalizeProductType(
+        product.productType
+      );
+
+    const cartKey =
+      createCartKey(
+        id,
+        productType
+      );
+
+    const stock =
+      Number(product.stock || 0);
+
+    if (
+      !Number.isFinite(stock) ||
+      stock <= 0
+    ) {
+      return;
+    }
+
+    const requestedQuantity =
+      Math.max(
+        1,
+        Number(quantity) || 1
+      );
 
     setCartItems((current) => {
       const existing =
         current.find(
           (item) =>
-            item.id === product.id
+            item.cartKey ===
+            cartKey
         );
 
       if (existing) {
-        return current.map((item) => {
-          if (
-            item.id !== product.id
-          ) {
-            return item;
-          }
+        return current.map(
+          (item) => {
+            if (
+              item.cartKey !==
+              cartKey
+            ) {
+              return item;
+            }
 
-          const nextQuantity =
-            item.quantity + quantity;
-
-          const safeQuantity =
-            Math.min(
-              nextQuantity,
+            const nextQuantity =
               Number(
-                product.stock || 0
-              )
-            );
+                item.quantity || 0
+              ) +
+              requestedQuantity;
 
-          return {
-            ...item,
-            quantity:
-              safeQuantity,
-          };
-        });
+            return {
+              ...item,
+              stock,
+              quantity:
+                Math.min(
+                  nextQuantity,
+                  stock
+                ),
+            };
+          }
+        );
       }
 
       return [
         ...current,
         {
           ...product,
-          quantity: Math.min(
-            quantity,
-            Number(
-              product.stock || 0
-            )
-          ),
+          id,
+          productType,
+          cartKey,
+          quantity:
+            Math.min(
+              requestedQuantity,
+              stock
+            ),
         },
       ];
     });
@@ -89,12 +189,33 @@ export function CartProvider({ children }) {
   /* UPDATE QUANTITY */
   const updateQuantity = (
     productId,
-    quantity
+    quantity,
+    productType = "REGULAR"
   ) => {
+    const id =
+      Number(productId);
+
+    if (
+      !Number.isInteger(id)
+    ) {
+      return;
+    }
+
+    const normalizedType =
+      normalizeProductType(
+        productType
+      );
+
+    const cartKey =
+      createCartKey(
+        id,
+        normalizedType
+      );
+
     setCartItems((current) =>
       current.map((item) => {
         if (
-          item.id !== productId
+          item.cartKey !== cartKey
         ) {
           return item;
         }
@@ -102,11 +223,15 @@ export function CartProvider({ children }) {
         const stock =
           Number(item.stock || 0);
 
+        if (stock <= 0) {
+          return item;
+        }
+
         const safeQuantity =
           Math.max(
             1,
             Math.min(
-              Number(quantity),
+              Number(quantity) || 1,
               stock
             )
           );
@@ -122,12 +247,33 @@ export function CartProvider({ children }) {
 
   /* REMOVE PRODUCT */
   const removeFromCart = (
-    productId
+    productId,
+    productType = "REGULAR"
   ) => {
+    const id =
+      Number(productId);
+
+    if (
+      !Number.isInteger(id)
+    ) {
+      return;
+    }
+
+    const normalizedType =
+      normalizeProductType(
+        productType
+      );
+
+    const cartKey =
+      createCartKey(
+        id,
+        normalizedType
+      );
+
     setCartItems((current) =>
       current.filter(
         (item) =>
-          item.id !== productId
+          item.cartKey !== cartKey
       )
     );
   };
@@ -135,6 +281,9 @@ export function CartProvider({ children }) {
   /* CLEAR CART */
   const clearCart = () => {
     setCartItems([]);
+    localStorage.removeItem(
+      CART_STORAGE_KEY
+    );
   };
 
   /* TOTAL ITEM COUNT */
@@ -161,12 +310,14 @@ export function CartProvider({ children }) {
                 item.originalPrice
             ) || 0;
 
+          const quantity =
+            Number(
+              item.quantity || 0
+            );
+
           return (
             total +
-            price *
-              Number(
-                item.quantity || 0
-              )
+            price * quantity
           );
         },
         0
@@ -177,7 +328,6 @@ export function CartProvider({ children }) {
     cartItems,
     itemCount,
     subtotal,
-
     addToCart,
     updateQuantity,
     removeFromCart,

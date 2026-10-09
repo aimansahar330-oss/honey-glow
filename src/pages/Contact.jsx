@@ -5,15 +5,15 @@ import {
 } from "lucide-react";
 
 const WHATSAPP_NUMBER =
-  "92XXXXXXXXXX";
+  "923137912736";
 
 const DISPLAY_NUMBER =
-  "+92 XXX XXXXXXX";
+  "+92 3137912736";
 
 function Contact() {
   const whatsappUrl =
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      "Hello HoneyGlow, I need some help."
+      "Hello KM care, I need some help."
     )}`;
 
   return (
@@ -43,7 +43,7 @@ function Contact() {
             />
 
             <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#a06b75]">
-              Contact HoneyGlow
+              Contact KM cares
             </p>
           </div>
 

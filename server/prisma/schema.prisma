@@ -66,7 +66,6 @@ model Product {
 
   video ProductVideo?
 
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -153,8 +152,13 @@ model OrderItem {
   price    Decimal @db.Decimal(10, 2)
   quantity Int
 
+  productType String @default("REGULAR")
+
   productId Int?
   product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  signatureProductId Int?
+  signatureProduct   SignatureProduct? @relation(fields: [signatureProductId], references: [id], onDelete: SetNull)
 
   orderId Int
   order   Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -163,6 +167,8 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
+  @@index([signatureProductId])
+  @@index([productType])
   @@map("order_items")
 }
 
@@ -186,7 +192,6 @@ model Notification {
   @@map("notifications")
 }
 
-
 model ProductVideo {
   id Int @id @default(autoincrement())
 
@@ -204,9 +209,9 @@ model ProductVideo {
 }
 
 model SignatureProduct {
-  id               Int      @id @default(autoincrement())
+  id               Int     @id @default(autoincrement())
   name             String
-  slug             String   @unique
+  slug             String  @unique
   shortDescription String?
 
   originalPrice Decimal  @db.Decimal(10, 2)
@@ -220,8 +225,9 @@ model SignatureProduct {
   isActive  Boolean @default(true)
   isPrimary Boolean @default(false)
 
-  images  SignatureProductImage[]
-  reviews SignatureProductReview[]
+  images     SignatureProductImage[]
+  reviews    SignatureProductReview[]
+  orderItems OrderItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -238,7 +244,7 @@ model SignatureProductImage {
   position Int    @default(0)
 
   signatureProductId Int
-  signatureProduct SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
+  signatureProduct   SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
@@ -253,10 +259,11 @@ model SignatureProductReview {
   comment String
 
   signatureProductId Int
-  signatureProduct SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
+  signatureProduct   SignatureProduct @relation(fields: [signatureProductId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
   @@index([signatureProductId])
+  @@index([createdAt])
   @@map("signature_product_reviews")
 }

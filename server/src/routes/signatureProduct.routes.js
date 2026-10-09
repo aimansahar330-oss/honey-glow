@@ -21,31 +21,10 @@ import upload from "../middleware/upload.middleware.js";
 const router = Router();
 
 /* PUBLIC */
-
-router.get(
-  "/",
-  getSignatureProducts
-);
-
-router.get(
-  "/primary",
-  getPrimarySignatureProduct
-);
-
-/* REVIEWS */
-
-router.get(
-  "/:id/reviews",
-  getSignatureProductReviews
-);
-
-router.post(
-  "/:id/reviews",
-  addSignatureProductReview
-);
+router.get("/", getSignatureProducts);
+router.get("/primary", getPrimarySignatureProduct);
 
 /* ADMIN */
-
 router.get(
   "/admin",
   protectAdmin,
@@ -72,8 +51,18 @@ router.delete(
   deleteSignatureProduct
 );
 
-/* DETAIL - KEEP LAST */
+/* REVIEWS */
+router.get(
+  "/:id/reviews",
+  getSignatureProductReviews
+);
 
+router.post(
+  "/:id/reviews",
+  addSignatureProductReview
+);
+
+/* DETAIL - KEEP LAST */
 router.get(
   "/:slug",
   getSignatureProductBySlug

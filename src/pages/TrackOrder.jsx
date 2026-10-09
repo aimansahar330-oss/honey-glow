@@ -134,7 +134,7 @@ function TrackOrder() {
             />
 
             <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#9b6871]">
-              HoneyGlow Delivery
+              KM Cares Delivery
             </span>
           </div>
 

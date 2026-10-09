@@ -181,16 +181,14 @@ function AdminLayout() {
           <div className="flex items-center gap-2">
 
             <img
-              src="/logo.png"
+              src="/km-cares-logo.png"
               alt="HoneyGlow"
-              className="h-11 w-11 object-contain"
+              className="h-16 w-18 object-contain"
             />
 
             <div>
 
-              <p className="font-beauty text-[22px] font-semibold text-[#67313d] dark:text-[#f0cbd3]">
-                Glow
-              </p>
+             
 
               <p className="text-[6px] font-bold uppercase tracking-[0.2em] text-[#a78389]">
                 Admin Studio
@@ -283,7 +281,7 @@ function AdminLayout() {
           <div className="rounded-[15px] bg-[#f3e5e1] p-3.5 dark:bg-[#241b1e]">
 
             <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-[#9f6873]">
-              HoneyGlow
+            KM Cares
             </p>
 
             <p className="font-beauty mt-1 text-[18px] text-[#623640] dark:text-[#eccbd2]">
@@ -340,7 +338,7 @@ function AdminLayout() {
           <div className="hidden lg:block">
 
             <p className="text-[9px] font-bold uppercase tracking-[0.19em] text-[#ab8289]">
-              HoneyGlow Administration
+              KM Administration
             </p>
           </div>
 

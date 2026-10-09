@@ -41,7 +41,7 @@ function About() {
           </h1>
 
           <p className="mx-auto mt-5 max-w-[620px] text-[10px] leading-5 text-[#7d666b] sm:text-[12px] sm:leading-6">
-            HoneyGlow is a beauty and self-care store
+            KM cares is a beauty and self-care store
             focused on simple products for skincare,
             hair care, body care and your everyday
             routine.
@@ -60,7 +60,7 @@ function About() {
           <div>
 
             <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#a36e77]">
-              HoneyGlow
+              KM cares
             </p>
 
             <h2 className="font-beauty mt-2 text-[32px] font-semibold leading-tight text-[#4a2c33] sm:text-[40px]">
@@ -69,7 +69,7 @@ function About() {
             </h2>
 
             <p className="mt-4 max-w-[570px] text-[10px] leading-6 text-[#80696e] sm:text-[11px]">
-              We created HoneyGlow to make everyday
+              We created KM cares to make everyday
               beauty and personal care easier to
               explore. Our store brings together
               products for different parts of your
@@ -78,7 +78,7 @@ function About() {
 
             <p className="mt-3 max-w-[570px] text-[10px] leading-6 text-[#80696e] sm:text-[11px]">
               From skincare and hair care to body and
-              self-care essentials, HoneyGlow is made
+              self-care essentials, KM cares is made
               for customers who want an easy shopping
               experience without unnecessary
               complication.
@@ -88,7 +88,7 @@ function About() {
               to="/products"
               className="group mt-6 inline-flex items-center gap-2 rounded-full bg-[#793747] px-5 py-2.5 text-[8px] font-bold uppercase tracking-[0.13em] text-white transition hover:bg-[#622c39]"
             >
-              Shop HoneyGlow
+              Shop KM cares
 
               <ArrowRight
                 size={11}
@@ -104,18 +104,11 @@ function About() {
 
               <div className="flex min-h-[330px] flex-col items-center justify-center rounded-[21px] border border-white/70 bg-white/35 px-6 text-center">
 
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#793747] text-white shadow-[0_10px_25px_rgba(121,55,71,0.18)]">
-                  <span className="text-[26px]">
-                    🍯
-                  </span>
-                </div>
-
-                <h3 className="font-beauty mt-5 text-[34px] font-semibold text-[#4a2c33]">
-                  Honey
-                  <span className="text-[#914656]">
-                    Glow
-                  </span>
-                </h3>
+                 <img
+              src="/km-cares-logo.png"
+              alt="KM Cares"
+              className="h-[54px] w-[150px] object-contain object-left sm:h-[62px] sm:w-[175px] lg:h-[68px] lg:w-[195px]"
+            />
 
                 <p className="mt-2 text-[7px] font-bold uppercase tracking-[0.24em] text-[#a17a81]">
                   Pure care. Naturally you.

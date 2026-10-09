@@ -8,7 +8,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-
 import { useCart } from "../context/CartContext";
 
 function Cart() {
@@ -29,16 +28,11 @@ function Cart() {
 
   return (
     <main className="min-h-screen bg-[#fffdfb]">
-
-      {/* =========================
-          HEADER
-      ========================= */}
+      {/* HEADER */}
       <section className="relative overflow-hidden border-b border-[#efdedb] bg-gradient-to-br from-[#fff8f5] via-[#fdf0ec] to-[#f7e2df] px-5 py-10 sm:px-8 lg:px-12 xl:px-16">
-
         <div className="pointer-events-none absolute -left-20 top-0 h-64 w-64 rounded-full bg-[#edc8c7]/30 blur-3xl" />
 
         <div className="relative mx-auto max-w-[1450px]">
-
           <div className="mb-2 flex items-center gap-2">
             <Sparkles
               size={12}
@@ -46,23 +40,21 @@ function Cart() {
             />
 
             <span className="text-[8px] font-bold uppercase tracking-[0.23em] text-[#9c6770]">
-              Your HoneyGlow Bag
+              Your KM Cares Bag
             </span>
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
             <div>
               <h1 className="font-beauty text-[38px] font-semibold leading-none tracking-[-0.04em] text-[#43262c] sm:text-[46px]">
                 Your little bag of
                 <span className="ml-2 text-[#873d4c]">
-                  glow.
+                  care.
                 </span>
               </h1>
 
               <p className="mt-3 max-w-[450px] text-[10px] leading-5 text-[#806a6e] sm:text-[11px]">
-                Review your selected care essentials
-                before heading to checkout.
+                Review your selected skin, beauty and care essentials before heading to checkout.
               </p>
             </div>
 
@@ -77,17 +69,11 @@ function Cart() {
         </div>
       </section>
 
-      {/* =========================
-          CART CONTENT
-      ========================= */}
+      {/* CART CONTENT */}
       <section className="px-5 py-8 sm:px-8 lg:px-12 lg:py-10 xl:px-16">
         <div className="mx-auto grid max-w-[1450px] gap-6 lg:grid-cols-[1fr_330px] xl:grid-cols-[1fr_350px]">
-
-          {/* =========================
-              CART ITEMS
-          ========================= */}
+          {/* CART ITEMS */}
           <div>
-
             <div className="mb-4 flex items-center justify-between">
               <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[#a2777e]">
                 {cartItems.length}{" "}
@@ -106,32 +92,24 @@ function Cart() {
             </div>
 
             <div className="space-y-3">
-              {cartItems.map(
-                (item) => (
-                  <CartItem
-                    key={item.id}
-                    item={item}
-                    updateQuantity={
-                      updateQuantity
-                    }
-                    removeFromCart={
-                      removeFromCart
-                    }
-                  />
-                )
-              )}
+              {cartItems.map((item) => (
+                <CartItem
+                  key={
+                    item.cartKey ||
+                    `${item.productType || "REGULAR"}-${item.id}`
+                  }
+                  item={item}
+                  updateQuantity={updateQuantity}
+                  removeFromCart={removeFromCart}
+                />
+              ))}
             </div>
           </div>
 
-          {/* =========================
-              ORDER SUMMARY
-          ========================= */}
+          {/* ORDER SUMMARY */}
           <aside className="lg:sticky lg:top-[95px] lg:self-start">
-
             <div className="overflow-hidden rounded-[24px] border border-[#e4c9c6] bg-gradient-to-b from-[#fff8f6] via-[#fdf1ee] to-[#f8e6e2] p-2 shadow-[0_14px_40px_rgba(80,44,53,0.08)]">
-
               <div className="rounded-[19px] border border-white/70 bg-white/55 p-5 backdrop-blur-sm">
-
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-[#a17079]">
@@ -144,15 +122,12 @@ function Cart() {
                   </div>
 
                   <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#f0d9d6] text-[#823e4b]">
-                    <ShoppingBag
-                      size={15}
-                    />
+                    <ShoppingBag size={15} />
                   </div>
                 </div>
 
                 {/* SUBTOTAL */}
                 <div className="mt-6 space-y-3 border-y border-[#ead8d5] py-4">
-
                   <SummaryRow
                     title="Subtotal"
                     value={`Rs. ${Number(
@@ -201,8 +176,7 @@ function Cart() {
                 </Link>
 
                 <p className="mt-3 text-center text-[6px] leading-4 text-[#a18c91]">
-                  Delivery charges and final order total
-                  will be confirmed at checkout.
+                  Delivery charges and final order total will be confirmed at checkout.
                 </p>
               </div>
             </div>
@@ -222,14 +196,24 @@ function CartItem({
   updateQuantity,
   removeFromCart,
 }) {
+  const productType =
+    item.productType === "SIGNATURE"
+      ? "SIGNATURE"
+      : "REGULAR";
+
+  const isSignature =
+    productType === "SIGNATURE";
+
   const image =
-    item.images?.[0]?.imageUrl;
+    item.images?.[0]?.imageUrl ||
+    item.imageUrl ||
+    null;
 
   const finalPrice =
     Number(
       item.discountPrice ??
         item.originalPrice
-    );
+    ) || 0;
 
   const quantity =
     Number(item.quantity || 1);
@@ -240,40 +224,77 @@ function CartItem({
   const lineTotal =
     finalPrice * quantity;
 
+  const regularProductPath =
+    item.slug
+      ? `/product/${item.slug}`
+      : "/products";
+
   return (
     <article className="group overflow-hidden rounded-[22px] border border-[#e5cecb] bg-gradient-to-r from-[#fff9f7] via-[#fffdfb] to-[#faece9] p-2 shadow-[0_8px_25px_rgba(79,46,53,0.05)] transition hover:border-[#cf9ea4] hover:shadow-[0_12px_30px_rgba(79,46,53,0.09)]">
-
       <div className="grid grid-cols-[82px_1fr] gap-3 rounded-[17px] border border-white/70 bg-white/50 p-2.5 sm:grid-cols-[100px_1fr_auto] sm:items-center sm:p-3">
-
         {/* IMAGE */}
-        <Link
-          to={`/product/${item.slug}`}
-          className="overflow-hidden rounded-[14px] border border-[#ead3d0] bg-[#f4e4e0]"
-        >
-          {image ? (
-            <img
-              src={image}
-              alt={item.name}
-              className="aspect-square h-full w-full object-cover transition duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="aspect-square bg-gradient-to-br from-[#f4d8d4] to-[#ead5a8]" />
-          )}
-        </Link>
+        {isSignature ? (
+          <div className="relative overflow-hidden rounded-[14px] border border-[#d9c1cf] bg-[#f4e4e8]">
+            {image ? (
+              <img
+                src={image}
+                alt={item.name}
+                className="aspect-square h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="aspect-square bg-gradient-to-br from-[#e2c7df] via-[#f0d5df] to-[#ead5a8]" />
+            )}
+
+            <span className="absolute left-1.5 top-1.5 rounded-full bg-[#6c3474]/90 px-1.5 py-1 text-[4px] font-bold uppercase tracking-[0.12em] text-white">
+              Signature
+            </span>
+          </div>
+        ) : (
+          <Link
+            to={regularProductPath}
+            className="overflow-hidden rounded-[14px] border border-[#ead3d0] bg-[#f4e4e0]"
+          >
+            {image ? (
+              <img
+                src={image}
+                alt={item.name}
+                className="aspect-square h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="aspect-square bg-gradient-to-br from-[#f4d8d4] to-[#ead5a8]" />
+            )}
+          </Link>
+        )}
 
         {/* DETAILS */}
         <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <p className="truncate text-[6px] font-bold uppercase tracking-[0.14em] text-[#a0777e]">
+              {isSignature
+                ? "KM Cares Signature"
+                : item.category?.name ||
+                  "KM Cares"}
+            </p>
 
-          <p className="truncate text-[6px] font-bold uppercase tracking-[0.14em] text-[#a0777e]">
-            {item.category?.name}
-          </p>
+            {isSignature && (
+              <span className="rounded-full border border-[#d7bfd5] bg-[#f3e6f2] px-1.5 py-0.5 text-[5px] font-bold uppercase tracking-[0.1em] text-[#713b78]">
+                Special
+              </span>
+            )}
+          </div>
 
-          <Link
-            to={`/product/${item.slug}`}
-            className="font-beauty mt-1 block truncate text-[16px] font-semibold text-[#503138] transition hover:text-[#873d4c] sm:text-[18px]"
-          >
-            {item.name}
-          </Link>
+          {isSignature ? (
+            <p className="font-beauty mt-1 block truncate text-[16px] font-semibold text-[#503138] sm:text-[18px]">
+              {item.name}
+            </p>
+          ) : (
+            <Link
+              to={regularProductPath}
+              className="font-beauty mt-1 block truncate text-[16px] font-semibold text-[#503138] transition hover:text-[#873d4c] sm:text-[18px]"
+            >
+              {item.name}
+            </Link>
+          )}
 
           {/* PRICE */}
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -300,13 +321,15 @@ function CartItem({
               decrease={() =>
                 updateQuantity(
                   item.id,
-                  quantity - 1
+                  quantity - 1,
+                  productType
                 )
               }
               increase={() =>
                 updateQuantity(
                   item.id,
-                  quantity + 1
+                  quantity + 1,
+                  productType
                 )
               }
             />
@@ -315,7 +338,8 @@ function CartItem({
               type="button"
               onClick={() =>
                 removeFromCart(
-                  item.id
+                  item.id,
+                  productType
                 )
               }
               className="flex h-8 w-8 items-center justify-center rounded-full border border-red-100 text-red-400 transition hover:bg-red-50"
@@ -327,7 +351,6 @@ function CartItem({
 
         {/* DESKTOP ACTIONS */}
         <div className="hidden min-w-[145px] flex-col items-end sm:flex">
-
           <p className="text-[11px] font-bold text-[#70333f]">
             Rs.{" "}
             {lineTotal.toLocaleString()}
@@ -340,13 +363,15 @@ function CartItem({
               decrease={() =>
                 updateQuantity(
                   item.id,
-                  quantity - 1
+                  quantity - 1,
+                  productType
                 )
               }
               increase={() =>
                 updateQuantity(
                   item.id,
-                  quantity + 1
+                  quantity + 1,
+                  productType
                 )
               }
             />
@@ -356,7 +381,8 @@ function CartItem({
             type="button"
             onClick={() =>
               removeFromCart(
-                item.id
+                item.id,
+                productType
               )
             }
             className="mt-3 inline-flex items-center gap-1.5 text-[6px] font-bold uppercase tracking-[0.12em] text-[#a7636e] transition hover:text-red-500"
@@ -382,7 +408,6 @@ function QuantityControl({
 }) {
   return (
     <div className="inline-flex items-center rounded-full border border-[#dfc7c4] bg-[#fff9f7] p-0.5">
-
       <button
         type="button"
         onClick={decrease}
@@ -400,6 +425,7 @@ function QuantityControl({
         type="button"
         onClick={increase}
         disabled={
+          stock <= 0 ||
           quantity >= stock
         }
         className="flex h-7 w-7 items-center justify-center rounded-full text-[#7b4650] transition hover:bg-[#f1dfdc] disabled:cursor-not-allowed disabled:opacity-30"
@@ -445,13 +471,9 @@ function SummaryRow({
 function EmptyCart() {
   return (
     <main className="flex min-h-[72vh] items-center justify-center bg-[#fffdfb] px-5 py-14">
-
       <div className="w-full max-w-[500px] text-center">
-
         <div className="relative mx-auto flex h-20 w-20 items-center justify-center">
-
           <div className="absolute inset-0 rounded-full border border-[#dcbfc0]" />
-
           <div className="absolute inset-2 rounded-full border border-dashed border-[#e7ceca]" />
 
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f3e1dd] text-[#873f4d]">
@@ -460,7 +482,7 @@ function EmptyCart() {
         </div>
 
         <p className="mt-6 text-[7px] font-bold uppercase tracking-[0.22em] text-[#a06d76]">
-          Your HoneyGlow Bag
+          Your KM Cares Bag
         </p>
 
         <h1 className="font-beauty mt-2 text-[34px] font-semibold text-[#4b2d34] sm:text-[40px]">
@@ -471,8 +493,7 @@ function EmptyCart() {
         </h1>
 
         <p className="mx-auto mt-3 max-w-[350px] text-[9px] leading-5 text-[#90777c]">
-          Discover a few beautiful care essentials
-          and bring a little more glow into your routine.
+          Discover beautiful skin, beauty and care essentials and add your favourites to your KM Cares bag.
         </p>
 
         <Link

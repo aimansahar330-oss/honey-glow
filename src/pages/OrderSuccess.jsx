@@ -91,7 +91,7 @@ function OrderSuccess() {
         </h1>
 
         <p className="mx-auto mt-3 max-w-[390px] text-[9px] leading-5 text-[#90777c]">
-          Thank you for shopping with HoneyGlow.
+          Thank you for shopping with KM cares. Your order has been successfully placed and is being processed.
           Save your tracking number to check
           your order status anytime.
         </p>

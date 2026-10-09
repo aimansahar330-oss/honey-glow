@@ -15,13 +15,7 @@ import {
   Truck,
   X,
 } from "lucide-react";
-
-import {
-  Link,
-  Navigate,
-  useNavigate,
-} from "react-router-dom";
-
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { placeOrder } from "../services/orderApi";
 
@@ -29,15 +23,12 @@ const DELIVERY_CHARGE = 200;
 
 function Checkout() {
   const navigate = useNavigate();
-
-  const {
-    cartItems,
-    subtotal,
-    clearCart,
-  } = useCart();
+  const { cartItems, subtotal, clearCart } = useCart();
 
   const [copied, setCopied] = useState(false);
   const [orderCompleted, setOrderCompleted] = useState(false);
+  const [successOrder, setSuccessOrder] = useState(null);
+  const [trackingCopied, setTrackingCopied] = useState(false);
 
   const [form, setForm] = useState({
     customerName: "",
@@ -46,75 +37,49 @@ function Checkout() {
     address: "",
     city: "",
     notes: "",
-
     paymentMethod: "COD",
-
     paymentSenderNumber: "",
     paymentReference: "",
-
     paymentProof: null,
     paymentProofPreview: "",
   });
 
- const orderMutation = useMutation({
-  mutationFn: placeOrder,
+  const orderMutation = useMutation({
+    mutationFn: placeOrder,
+    onSuccess: (response) => {
+      console.log("ORDER SUCCESS RESPONSE:", response);
 
-  onSuccess: (response) => {
-    console.log("ORDER SUCCESS RESPONSE:", response);
+      const order = response?.data;
 
-    const order = response?.data;
+      if (!order?.trackingNumber) {
+        console.error(
+          "Tracking number missing from response:",
+          response
+        );
+        return;
+      }
 
-    if (!order?.trackingNumber) {
-      console.error(
-        "Tracking number missing from response:",
-        response
+      localStorage.setItem(
+        "honeyglow_last_tracking",
+        order.trackingNumber
       );
 
-      return;
-    }
+      localStorage.setItem(
+        "honeyglow_last_order_phone",
+        form.phone
+      );
 
-    // Tracking number ko pehle browser mein save karo
-    localStorage.setItem(
-      "honeyglow_last_tracking",
-      order.trackingNumber
-    );
-
-    // Customer phone bhi save karo
-    localStorage.setItem(
-      "honeyglow_last_order_phone",
-      form.phone
-    );
-
-    // Empty-cart redirect ko disable karo
-    setOrderCompleted(true);
-
-    // Success page par pehle navigate karo
-    navigate(
-      `/order-success?tracking=${encodeURIComponent(
-        order.trackingNumber
-      )}`,
-      {
-        replace: true,
-        state: {
-          order,
-        },
-      }
-    );
-
-    // Navigation ke baad cart clear karo
-    setTimeout(() => {
+      setOrderCompleted(true);
+      setSuccessOrder(order);
       clearCart();
-    }, 0);
-  },
-
-  onError: (error) => {
-    console.error(
-      "ORDER PLACE ERROR:",
-      error?.response?.data || error
-    );
-  },
-});
-
+    },
+    onError: (error) => {
+      console.error(
+        "ORDER PLACE ERROR:",
+        error?.response?.data || error
+      );
+    },
+  });
 
   useEffect(() => {
     return () => {
@@ -126,20 +91,20 @@ function Checkout() {
     };
   }, [form.paymentProofPreview]);
 
- if (
-  !orderCompleted &&
-  (
-    !Array.isArray(cartItems) ||
-    cartItems.length === 0
-  )
-) {
-  return (
-    <Navigate
-      to="/cart"
-      replace
-    />
-  );
-}
+  if (
+    !orderCompleted &&
+    (
+      !Array.isArray(cartItems) ||
+      cartItems.length === 0
+    )
+  ) {
+    return (
+      <Navigate
+        to="/cart"
+        replace
+      />
+    );
+  }
 
   const total =
     Number(subtotal) +
@@ -160,16 +125,11 @@ function Checkout() {
       : import.meta.env.VITE_EASYPAISA_TITLE;
 
   const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
+    const { name, value } = e.target;
 
     setForm((previous) => {
       if (name === "paymentMethod") {
-        if (
-          previous.paymentProofPreview
-        ) {
+        if (previous.paymentProofPreview) {
           URL.revokeObjectURL(
             previous.paymentProofPreview
           );
@@ -177,12 +137,9 @@ function Checkout() {
 
         return {
           ...previous,
-
           paymentMethod: value,
-
           paymentSenderNumber: "",
           paymentReference: "",
-
           paymentProof: null,
           paymentProofPreview: "",
         };
@@ -219,7 +176,6 @@ function Checkout() {
       );
 
       e.target.value = "";
-
       return;
     }
 
@@ -232,7 +188,6 @@ function Checkout() {
       );
 
       e.target.value = "";
-
       return;
     }
 
@@ -251,10 +206,8 @@ function Checkout() {
 
     setForm((previous) => ({
       ...previous,
-
       paymentProof: file,
-      paymentProofPreview:
-        preview,
+      paymentProofPreview: preview,
     }));
 
     e.target.value = "";
@@ -271,7 +224,6 @@ function Checkout() {
 
     setForm((previous) => ({
       ...previous,
-
       paymentProof: null,
       paymentProofPreview: "",
     }));
@@ -296,6 +248,50 @@ function Checkout() {
       } catch {
         setCopied(false);
       }
+    };
+
+  const copyTrackingNumber =
+    async () => {
+      if (
+        !successOrder?.trackingNumber
+      ) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(
+          successOrder.trackingNumber
+        );
+
+        setTrackingCopied(true);
+
+        setTimeout(() => {
+          setTrackingCopied(false);
+        }, 1500);
+      } catch {
+        setTrackingCopied(false);
+      }
+    };
+
+  const openOrderSuccessPage =
+    () => {
+      if (
+        !successOrder?.trackingNumber
+      ) {
+        return;
+      }
+
+      navigate(
+        `/order-success?tracking=${encodeURIComponent(
+          successOrder.trackingNumber
+        )}`,
+        {
+          replace: true,
+          state: {
+            order: successOrder,
+          },
+        }
+      );
     };
 
   const handleSubmit = (e) => {
@@ -367,29 +363,43 @@ function Checkout() {
 
       items:
         cartItems.map(
-          (item) => ({
-            productId:
-              item.id,
+          (item) => {
+            const productType =
+              item.productType ===
+              "SIGNATURE"
+                ? "SIGNATURE"
+                : "REGULAR";
 
-            quantity:
-              item.quantity,
-          })
+            return {
+              productType,
+
+              productId:
+                productType ===
+                "REGULAR"
+                  ? item.id
+                  : null,
+
+              signatureProductId:
+                productType ===
+                "SIGNATURE"
+                  ? item.id
+                  : null,
+
+              quantity:
+                item.quantity,
+            };
+          }
         ),
     });
   };
 
   return (
     <main className="min-h-screen bg-[#fffdfb]">
-
-      {/* =========================
-          HEADER
-      ========================= */}
+      {/* HEADER */}
       <section className="relative overflow-hidden border-b border-[#eedbd8] bg-gradient-to-br from-[#fff8f5] via-[#fdf0ec] to-[#f8e2df] px-5 py-8 sm:px-8 sm:py-9 lg:px-12 xl:px-16">
-
         <div className="pointer-events-none absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#edc7c7]/30 blur-3xl" />
 
         <div className="relative mx-auto max-w-[1450px]">
-
           <div className="mb-2 flex items-center gap-2">
             <Sparkles
               size={13}
@@ -402,19 +412,16 @@ function Checkout() {
           </div>
 
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-
             <div>
               <h1 className="font-beauty text-[37px] font-semibold leading-none tracking-[-0.04em] text-[#43262c] sm:text-[44px]">
                 Complete your
-
                 <span className="ml-2 text-[#873d4c]">
                   order.
                 </span>
               </h1>
 
               <p className="mt-3 max-w-[500px] text-[11px] leading-5 text-[#806a6e] sm:text-[12px]">
-                Add your delivery details and choose
-                the payment method that works best for you.
+                Add your delivery details and choose the payment method that works best for you.
               </p>
             </div>
 
@@ -432,23 +439,16 @@ function Checkout() {
         </div>
       </section>
 
-      {/* =========================
-          CHECKOUT
-      ========================= */}
+      {/* CHECKOUT */}
       <section className="px-5 py-7 sm:px-8 sm:py-8 lg:px-12 xl:px-16">
-
         <div className="mx-auto grid max-w-[1220px] gap-5 lg:grid-cols-[minmax(0,730px)_320px] lg:justify-center xl:grid-cols-[minmax(0,750px)_330px]">
 
-          {/* =========================
-              FORM SIDE
-          ========================= */}
+          {/* FORM SIDE */}
           <div className="h-fit overflow-hidden rounded-[22px] border border-[#e5cbc8] bg-gradient-to-br from-[#fff9f7] via-[#fffdfb] to-[#faece9] p-1.5 shadow-[0_12px_38px_rgba(84,47,56,0.06)]">
-
             <div className="rounded-[18px] border border-white/80 bg-white/60 p-4 backdrop-blur-sm sm:p-5">
 
               {/* FORM HEADER */}
               <div className="flex items-center gap-3 border-b border-[#ead9d6] pb-4">
-
                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f1ddda] text-[#873e4c]">
                   <MapPin
                     size={16}
@@ -461,19 +461,19 @@ function Checkout() {
                   </p>
 
                   <h2 className="font-beauty mt-0.5 text-[23px] font-semibold text-[#503138] sm:text-[25px]">
-                    Where should we send your glow?
+                    Where should we send your care?
                   </h2>
                 </div>
               </div>
 
               <form
-                onSubmit={handleSubmit}
+                onSubmit={
+                  handleSubmit
+                }
                 className="mt-5 space-y-4"
               >
-
                 {/* NAME + PHONE */}
                 <div className="grid gap-3 sm:grid-cols-2">
-
                   <CheckoutField
                     label="Full Name"
                     required
@@ -518,8 +518,9 @@ function Checkout() {
 
                 {/* EMAIL + CITY */}
                 <div className="grid gap-3 sm:grid-cols-2">
-
-                  <CheckoutField label="Email">
+                  <CheckoutField
+                    label="Email"
+                  >
                     <input
                       type="email"
                       name="email"
@@ -578,7 +579,9 @@ function Checkout() {
                 </CheckoutField>
 
                 {/* NOTES */}
-                <CheckoutField label="Order Notes">
+                <CheckoutField
+                  label="Order Notes"
+                >
                   <textarea
                     rows="2"
                     name="notes"
@@ -593,11 +596,8 @@ function Checkout() {
                   />
                 </CheckoutField>
 
-                {/* =========================
-                    PAYMENT METHODS
-                ========================= */}
+                {/* PAYMENT */}
                 <div className="border-t border-[#ead9d6] pt-5">
-
                   <div className="mb-3">
                     <p className="text-[9px] font-bold uppercase tracking-[0.17em] text-[#a1737b]">
                       Payment Method
@@ -609,8 +609,6 @@ function Checkout() {
                   </div>
 
                   <div className="grid gap-2.5 sm:grid-cols-3">
-
-                    {/* COD */}
                     <PaymentOption
                       name="paymentMethod"
                       value="COD"
@@ -628,7 +626,6 @@ function Checkout() {
                       description="Pay when your order arrives."
                     />
 
-                    {/* JAZZCASH */}
                     <PaymentOption
                       name="paymentMethod"
                       value="JAZZCASH"
@@ -646,7 +643,6 @@ function Checkout() {
                       description="Pay through your wallet."
                     />
 
-                    {/* EASYPAISA */}
                     <PaymentOption
                       name="paymentMethod"
                       value="EASYPAISA"
@@ -665,24 +661,19 @@ function Checkout() {
                     />
                   </div>
 
-                  {/* =========================
-                      WALLET PAYMENT DETAILS
-                  ========================= */}
+                  {/* WALLET */}
                   {walletPayment && (
                     <div className="mt-4 overflow-hidden rounded-[18px] border border-[#dfc6c3] bg-gradient-to-br from-[#fff9f7] via-[#fffdfb] to-[#f8e8e5] p-1">
-
                       <div className="rounded-[15px] border border-white/80 bg-white/55 p-4">
 
-                        {/* PAYMENT ACCOUNT */}
+                        {/* ACCOUNT */}
                         <div className="flex flex-col gap-3 border-b border-[#ead4d1] pb-4 sm:flex-row sm:items-center sm:justify-between">
-
                           <div>
                             <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#9b6871]">
                               Send Payment To
                             </p>
 
                             <div className="mt-1.5 flex items-center gap-2">
-
                               <p className="text-[15px] font-bold tracking-[0.03em] text-[#623740]">
                                 {paymentNumber ||
                                   "Add number in .env"}
@@ -713,7 +704,7 @@ function Checkout() {
                               Account Title:{" "}
                               <span className="font-semibold text-[#68464d]">
                                 {paymentTitle ||
-                                  "HoneyGlow"}
+                                  "KM Cares"}
                               </span>
                             </p>
                           </div>
@@ -726,9 +717,8 @@ function Checkout() {
                           </div>
                         </div>
 
-                        {/* SENDER / TRANSACTION */}
+                        {/* SENDER + TRANSACTION */}
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-
                           <CheckoutField
                             label="Sender Number"
                             required
@@ -745,7 +735,6 @@ function Checkout() {
                                     previous
                                   ) => ({
                                     ...previous,
-
                                     paymentSenderNumber:
                                       e
                                         .target
@@ -775,7 +764,6 @@ function Checkout() {
                                     previous
                                   ) => ({
                                     ...previous,
-
                                     paymentReference:
                                       e
                                         .target
@@ -791,12 +779,10 @@ function Checkout() {
                           </CheckoutField>
                         </div>
 
-                        {/* PAYMENT SCREENSHOT */}
+                        {/* SCREENSHOT */}
                         <div className="mt-4">
-
                           <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.13em] text-[#77585f] sm:text-[10px]">
                             Payment Screenshot
-
                             <span className="ml-1 text-[#a94354]">
                               *
                             </span>
@@ -804,7 +790,6 @@ function Checkout() {
 
                           {!form.paymentProofPreview ? (
                             <label className="group flex cursor-pointer items-center gap-3 rounded-[15px] border-2 border-dashed border-[#d9bdbb] bg-white/65 p-3.5 transition hover:border-[#a55b68] hover:bg-white">
-
                               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#f0dcda] text-[#82404d]">
                                 <ImagePlus
                                   size={17}
@@ -832,9 +817,7 @@ function Checkout() {
                             </label>
                           ) : (
                             <div className="relative overflow-hidden rounded-[15px] border border-[#dec5c2] bg-white/70 p-2">
-
                               <div className="flex items-center gap-3">
-
                                 <img
                                   src={
                                     form.paymentProofPreview
@@ -844,9 +827,12 @@ function Checkout() {
                                 />
 
                                 <div className="min-w-0 flex-1">
-
                                   <p className="truncate text-[10px] font-semibold text-[#613d44]">
-                                    {form.paymentProof?.name}
+                                    {
+                                      form
+                                        .paymentProof
+                                        ?.name
+                                    }
                                   </p>
 
                                   <p className="mt-1 text-[8px] text-[#9d8388]">
@@ -895,16 +881,13 @@ function Checkout() {
                         </div>
 
                         <div className="mt-3 flex items-start gap-2 rounded-xl bg-[#f7e8e5] px-3 py-2.5">
-
                           <CheckCircle2
                             size={13}
                             className="mt-0.5 shrink-0 text-[#8d4754]"
                           />
 
                           <p className="text-[8px] leading-4 text-[#876b71] sm:text-[9px]">
-                            Your payment screenshot and transaction
-                            ID will be reviewed before the order is
-                            processed.
+                            Your payment screenshot and transaction ID will be reviewed before the order is processed.
                           </p>
                         </div>
                       </div>
@@ -945,17 +928,11 @@ function Checkout() {
             </div>
           </div>
 
-          {/* =========================
-              ORDER SUMMARY
-          ========================= */}
+          {/* ORDER SUMMARY */}
           <aside className="lg:sticky lg:top-[95px] lg:self-start">
-
             <div className="overflow-hidden rounded-[22px] border border-[#e4c9c6] bg-gradient-to-b from-[#fff8f6] via-[#fdf1ee] to-[#f8e6e2] p-1.5 shadow-[0_14px_40px_rgba(80,44,53,0.08)]">
-
               <div className="rounded-[17px] border border-white/70 bg-white/60 p-4 backdrop-blur-sm">
-
                 <div className="flex items-center justify-between">
-
                   <div>
                     <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-[#a17079]">
                       Your Order
@@ -976,12 +953,12 @@ function Checkout() {
 
                 {/* PRODUCTS */}
                 <div className="mt-4 max-h-[230px] space-y-3 overflow-y-auto pr-1">
-
                   {cartItems.map(
                     (item) => (
                       <CheckoutItem
                         key={
-                          item.id
+                          item.cartKey ||
+                          `${item.productType || "REGULAR"}-${item.id}`
                         }
                         item={
                           item
@@ -993,7 +970,6 @@ function Checkout() {
 
                 {/* TOTALS */}
                 <div className="mt-4 space-y-3 border-t border-[#ead8d5] pt-4">
-
                   <SummaryRow
                     label="Subtotal"
                     value={`Rs. ${Number(
@@ -1007,9 +983,7 @@ function Checkout() {
                   />
 
                   <div className="border-t border-[#ead8d5] pt-3">
-
                     <div className="flex items-end justify-between">
-
                       <span className="text-[9px] font-bold uppercase tracking-[0.13em] text-[#775a61]">
                         Total
                       </span>
@@ -1024,9 +998,8 @@ function Checkout() {
                   </div>
                 </div>
 
-                {/* SELECTED PAYMENT */}
+                {/* PAYMENT */}
                 <div className="mt-4 rounded-xl border border-[#ead7d4] bg-white/45 px-3 py-2.5">
-
                   <p className="text-[8px] font-bold uppercase tracking-[0.13em] text-[#9d757d]">
                     Payment
                   </p>
@@ -1044,7 +1017,6 @@ function Checkout() {
 
                 {/* INFO */}
                 <div className="mt-4 space-y-2.5">
-
                   <Feature
                     icon={Truck}
                     text="Delivery across Pakistan"
@@ -1056,7 +1028,9 @@ function Checkout() {
                   />
 
                   <Feature
-                    icon={CheckCircle2}
+                    icon={
+                      CheckCircle2
+                    }
                     text="Secure order processing"
                   />
                 </div>
@@ -1065,7 +1039,148 @@ function Checkout() {
           </aside>
         </div>
       </section>
+
+      {/* SUCCESS POPUP */}
+      {successOrder && (
+        <OrderSuccessPopup
+          order={
+            successOrder
+          }
+          trackingCopied={
+            trackingCopied
+          }
+          copyTrackingNumber={
+            copyTrackingNumber
+          }
+          onContinue={
+            openOrderSuccessPage
+          }
+        />
+      )}
     </main>
+  );
+}
+
+/* =====================================================
+   ORDER SUCCESS POPUP
+===================================================== */
+
+function OrderSuccessPopup({
+  order,
+  trackingCopied,
+  copyTrackingNumber,
+  onContinue,
+}) {
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-[#3d252c]/55 px-4 backdrop-blur-[6px]">
+      <div className="relative w-full max-w-[430px] overflow-hidden rounded-[28px] border border-[#ead6d4] bg-[#fffaf8] shadow-[0_35px_100px_rgba(58,31,39,0.28)]">
+        <div className="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-[#ead1d8]/50 blur-3xl" />
+        <div className="absolute -left-20 bottom-0 h-44 w-44 rounded-full bg-[#e9d4af]/25 blur-3xl" />
+
+        <div className="relative p-6 text-center sm:p-8">
+          <div className="relative mx-auto flex h-[78px] w-[78px] items-center justify-center">
+            <div className="absolute inset-0 animate-ping rounded-full bg-emerald-500/10" />
+            <div className="absolute inset-2 rounded-full border border-emerald-200 bg-emerald-50" />
+
+            <div className="relative flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-[0_10px_28px_rgba(34,197,94,0.25)]">
+              <CheckCircle2
+                size={24}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 flex items-center justify-center gap-2">
+            <Sparkles
+              size={11}
+              className="text-[#a86672]"
+            />
+
+            <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#a86672]">
+              KM Cares
+            </p>
+          </div>
+
+          <h2 className="font-beauty mt-2 text-[31px] font-semibold leading-none text-[#4e3037] sm:text-[35px]">
+            Order placed
+            <span className="ml-2 text-[#8d4351]">
+              successfully.
+            </span>
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-[330px] text-[10px] leading-5 text-[#8d7479]">
+            Thank you for shopping with KM Cares. Your order has been received and is now being processed.
+          </p>
+
+          <div className="mt-6 rounded-[18px] border border-[#e3cdca] bg-gradient-to-br from-[#fff8f6] to-[#f7e7e4] p-4">
+            <p className="text-[7px] font-bold uppercase tracking-[0.17em] text-[#a27a80]">
+              Tracking Number
+            </p>
+
+            <div className="mt-2 flex items-center justify-center gap-2">
+              <p className="break-all text-[15px] font-bold tracking-[0.04em] text-[#663640]">
+                {
+                  order.trackingNumber
+                }
+              </p>
+
+              <button
+                type="button"
+                onClick={
+                  copyTrackingNumber
+                }
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#ddc4c1] bg-white text-[#81404c] transition hover:bg-[#f3dfdc]"
+              >
+                {trackingCopied ? (
+                  <CheckCircle2
+                    size={13}
+                  />
+                ) : (
+                  <Copy
+                    size={13}
+                  />
+                )}
+              </button>
+            </div>
+
+            {trackingCopied && (
+              <p className="mt-2 text-[7px] font-semibold text-emerald-600">
+                Tracking number copied
+              </p>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center justify-center gap-2 rounded-xl bg-[#f5e6e3] px-3 py-2.5">
+            <PackageCheck
+              size={14}
+              className="shrink-0 text-[#884451]"
+            />
+
+            <p className="text-[8px] font-medium text-[#76575d]">
+              Keep your tracking number safe to check your order status.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={
+              onContinue
+            }
+            className="group mt-6 flex w-full items-center justify-center gap-2 rounded-full bg-[#793747] py-3.5 text-[9px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_10px_28px_rgba(121,55,71,0.22)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#612b38]"
+          >
+            View Order Details
+
+            <ArrowRight
+              size={13}
+              className="transition duration-300 group-hover:translate-x-1"
+            />
+          </button>
+
+          <p className="mt-3 text-[7px] text-[#aa9296]">
+            Your order confirmation has been saved.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1103,7 +1218,6 @@ function PaymentOption({
       </div>
 
       <div className="min-w-0 flex-1">
-
         <p className="text-[10px] font-bold text-[#58383f]">
           {title}
         </p>
@@ -1137,7 +1251,6 @@ function CheckoutField({
   return (
     <div>
       <label className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.13em] text-[#77585f] sm:text-[10px]">
-
         {label}
 
         {required && (
@@ -1160,22 +1273,28 @@ function CheckoutItem({
   item,
 }) {
   const image =
-    item.images?.[0]?.imageUrl;
+    item.images?.[0]?.imageUrl ||
+    item.imageUrl ||
+    null;
 
   const price =
     Number(
       item.discountPrice ??
         item.originalPrice
-    );
+    ) || 0;
+
+  const isSignature =
+    item.productType ===
+    "SIGNATURE";
 
   return (
     <div className="flex items-center gap-3">
-
-      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#ead4d0] bg-[#f4e4e0]">
-
+      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border border-[#ead4d0] bg-[#f4e4e0]">
         {image ? (
           <img
-            src={image}
+            src={
+              image
+            }
             alt={
               item.name
             }
@@ -1187,14 +1306,23 @@ function CheckoutItem({
       </div>
 
       <div className="min-w-0 flex-1">
+        {isSignature && (
+          <p className="mb-0.5 text-[5px] font-bold uppercase tracking-[0.12em] text-[#77447d]">
+            KM Cares Signature
+          </p>
+        )}
 
         <p className="truncate font-beauty text-[15px] font-semibold text-[#54343b]">
-          {item.name}
+          {
+            item.name
+          }
         </p>
 
         <p className="mt-0.5 text-[9px] text-[#9c8489]">
           Qty:{" "}
-          {item.quantity}
+          {
+            item.quantity
+          }
         </p>
       </div>
 
@@ -1202,7 +1330,9 @@ function CheckoutItem({
         Rs.{" "}
         {(
           price *
-          item.quantity
+          Number(
+            item.quantity
+          )
         ).toLocaleString()}
       </p>
     </div>
@@ -1219,7 +1349,6 @@ function SummaryRow({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-
       <span className="text-[10px] text-[#826a6f]">
         {label}
       </span>
@@ -1241,7 +1370,6 @@ function Feature({
 }) {
   return (
     <div className="flex items-center gap-2 text-[9px] text-[#8e747a]">
-
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#f1e0dd] text-[#854451]">
         <Icon
           size={11}
@@ -1252,10 +1380,6 @@ function Feature({
     </div>
   );
 }
-
-/* =====================================================
-   INPUT STYLE
-===================================================== */
 
 const inputClass =
   "w-full rounded-[11px] border border-[#e2cfcc] bg-white/80 px-3.5 py-2.5 text-[10px] text-[#513a40] outline-none transition placeholder:text-[9px] placeholder:text-[#b29ba0] focus:border-[#a65c69] focus:bg-white sm:text-[11px]";
