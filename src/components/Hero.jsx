@@ -20,8 +20,7 @@ function Hero() {
       </picture>
 
       {/* LIGHT READABILITY OVERLAY */}
-      <div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-r from-[#fff7f1]/30 via-[#fff7f1]/20 to-transparent sm:from-[#fff7f1]/70 sm:via-[#fff7f1]/25 lg:from-[#fff7f1]/62 lg:via-[#fff7f1]/18" />
-
+<div className="pointer-events-none absolute inset-0 -z-20 bg-gradient-to-r from-white/60 via-white/10 to-transparent" />
       {/* SOFT PINK GLOW */}
       <div className="pointer-events-none absolute -left-40 top-20 -z-10 h-[500px] w-[520px] rounded-full bg-[#f8d2cf]/20 blur-[100px]" />
 
