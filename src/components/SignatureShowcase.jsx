@@ -235,17 +235,17 @@ function SignatureShowcase() {
                   />
                 </span>
                 <p className="text-[7px] font-bold uppercase tracking-[0.24em] text-[#a9737c] sm:text-[8px]">
-                  HoneyGlow Signature
+                    KM  Signature
                 </p>
               </div>
               <h2 className="font-beauty mt-3 text-[34px] font-semibold leading-[0.94] tracking-[-0.04em] text-[#53383f] sm:text-[44px] lg:text-[50px]">
-                Signature
+                KM Cares
                 <span className="ml-2 text-[#b96f7c]">
-                  essentials.
+                   Signature Collection
                 </span>
               </h2>
               <p className="mt-3 max-w-[470px] text-[8px] leading-5 text-[#907c81] sm:text-[9px]">
-                Discover HoneyGlow&apos;s most special beauty essentials.
+                Discover KM Cares&apos;s most special beauty essentials.
               </p>
             </div>
           
@@ -369,7 +369,7 @@ function SignatureShowcase() {
               {videoId ? (
                 <iframe
                   src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=1&rel=0&loop=1&playlist=${videoId}&playsinline=1&modestbranding=1`}
-                  title="HoneyGlow Signature Video"
+                  title="KM Signature Video"
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen
                   className="absolute inset-0 h-full w-full"
@@ -394,7 +394,7 @@ function SignatureShowcase() {
               <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#453039]/90 to-transparent" />
               <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/15 bg-[#3d2930]/70 px-3 py-1.5">
                 <p className="text-[6px] font-bold uppercase tracking-[0.18em] text-white">
-                  HoneyGlow Film
+                  KM Care Film
                 </p>
               </div>
               <div className="pointer-events-none absolute bottom-5 left-5">
@@ -571,7 +571,7 @@ function AnimatedProductCard({
             {/* BOTTOM LABEL */}
             <div className="absolute bottom-4 left-4 right-4 rounded-[12px] border border-white/20 bg-[#245365]/60 px-3.5 py-2.5">
               <p className="text-[5px] font-bold uppercase tracking-[0.18em] text-white">
-                HoneyGlow Signature Collection
+                KM Cares Signature Collection
               </p>
             </div>
           </div>
@@ -946,7 +946,7 @@ function SignatureDetailModal({
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-[#eadcdf] bg-[#fffaf8] px-4 py-3">
           <div>
             <p className="text-[6px] font-bold uppercase tracking-[0.18em] text-[#a66874]">
-              HoneyGlow Signature
+              KM Cares Signature
             </p>
             <p className="font-beauty mt-0.5 text-[18px] font-semibold text-[#593b42]">
               Product Detail
@@ -1059,7 +1059,7 @@ function SignatureDetailModal({
             {/* DESCRIPTION ONLY MODAL */}
             <p className="mt-4 text-[9px] leading-5 text-[#7e686d]">
               {product.shortDescription ||
-                "A premium HoneyGlow signature essential created for your beauty ritual."}
+                "A premium KM Cares signature essential created for your beauty ritual."}
             </p>
             {/* PRICE */}
             <div className="mt-5 flex flex-wrap items-center gap-2.5">
