@@ -56,7 +56,7 @@ function FeaturedProducts() {
                 />
 
                 <span className="text-[8px] font-bold uppercase tracking-[0.24em] text-[#9a6870]">
-                  HoneyGlow Favorites
+                  KM Cares Favorites
                 </span>
               </div>
 

@@ -207,7 +207,7 @@ function AdminSignatureProducts() {
           </h1>
 
           <p className="mt-1.5 max-w-[520px] text-[9px] text-[#92777d] sm:text-xs dark:text-[#a99297]">
-            Manage HoneyGlow&apos;s main premium products separately from the normal store catalog.
+            Manage KM Cares&apos;s main premium products separately from the normal store catalog.
           </p>
         </div>
 
@@ -257,7 +257,7 @@ function AdminSignatureProducts() {
           </h2>
 
           <p className="mt-2 text-[9px] text-[#9b8388]">
-            Add Zafrani Night Cream or another premium HoneyGlow product.
+            Add Zafrani Night Cream or another premium KM Cares product.
           </p>
         </div>
       ) : (

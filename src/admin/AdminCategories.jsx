@@ -386,7 +386,7 @@ function AdminCategories() {
 
           <p className="mt-1.5 text-[9px] text-[#92777d] sm:text-xs dark:text-[#a99297]">
             Organize the care collections shown
-            across HoneyGlow.
+            across KM cares
           </p>
         </div>
 
@@ -463,7 +463,7 @@ function AdminCategories() {
           </h2>
 
           <p className="mt-1.5 text-[9px] text-[#9b8388]">
-            Create your first HoneyGlow category.
+            Create your first KM Cares category.
           </p>
 
           {!search && (
@@ -901,7 +901,7 @@ function CategoryModal({
           <div>
 
             <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-[#a2606e] sm:text-[8px]">
-              HoneyGlow Catalog
+              KM Cares Catalog
             </p>
 
             <h2 className="font-beauty mt-1 text-[24px] font-semibold text-[#4b2c33] sm:text-[28px] dark:text-[#f5e7ea]">

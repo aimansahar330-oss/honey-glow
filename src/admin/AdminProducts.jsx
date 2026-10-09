@@ -480,7 +480,7 @@ function AdminProducts() {
           </h1>
 
           <p className="mt-1.5 text-[9px] text-[#92777d] sm:text-xs dark:text-[#a99297]">
-            Manage your HoneyGlow products,
+            Manage your KM Cares products,
             pricing and stock.
           </p>
         </div>
@@ -558,7 +558,7 @@ function AdminProducts() {
           </h2>
 
           <p className="mt-1.5 text-[9px] text-[#9b8388]">
-            Add your first HoneyGlow product.
+            Add your first KM Cares product.
           </p>
         </div>
       ) : (
@@ -1155,7 +1155,7 @@ function ProductModal({
           <div>
 
             <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-[#a2606e] sm:text-[8px]">
-              HoneyGlow Catalog
+              KM Cares Catalog
             </p>
 
             <h2 className="font-beauty mt-1 text-[24px] font-semibold text-[#4c2f36] sm:text-[28px] dark:text-[#f2e1e5]">

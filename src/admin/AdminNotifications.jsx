@@ -501,7 +501,7 @@ function AdminNotifications() {
             <div className="min-w-0">
 
               <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[#a36d77]">
-                HoneyGlow
+                KM Cares notifications
               </p>
 
               <div className="mt-0.5 flex flex-wrap items-center gap-2">

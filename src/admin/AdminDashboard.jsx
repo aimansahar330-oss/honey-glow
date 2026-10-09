@@ -142,7 +142,7 @@ function AdminDashboard() {
 
           <p className="mt-2 text-xs text-[#92777d] dark:text-[#a99297]">
             Here's what's happening
-            with HoneyGlow.
+            with your KM Cares store.
           </p>
         </div>
 

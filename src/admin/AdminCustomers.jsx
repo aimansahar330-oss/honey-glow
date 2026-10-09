@@ -89,7 +89,7 @@ function AdminCustomers() {
 
           <p className="mt-2 text-xs text-[#92777d] dark:text-[#a99297]">
             Customers who have placed
-            orders on HoneyGlow.
+            orders on KM Cares
           </p>
         </div>
 
