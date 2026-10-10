@@ -1056,73 +1056,61 @@ function SignatureHomeCard({
               "1.1s",
           }}
         />
+{/* IMAGE */}
 
-        {/* IMAGE */}
+<div
+  className={`relative w-full shrink-0 overflow-hidden ${
+    compact
+      ? "h-[185px] sm:h-[195px] lg:h-[230px] xl:h-[245px]"
+      : "h-[220px] sm:h-[235px] lg:h-[260px] xl:h-[275px]"
+  }`}
+>
+  {image ? (
+    <img
+      src={image}
+      alt={product.name}
+      className="
+        block
+        h-full
+        w-full
+        object-cover
+        object-center
+      "
+    />
+  ) : (
+    <div className="flex h-full w-full items-center justify-center bg-[#f8eeee]">
+      <Sparkles
+        size={22}
+        className="text-[#b98b94]"
+      />
+    </div>
+  )}
 
-        <div
-          className={`relative overflow-hidden bg-gradient-to-br from-[#f3e7e7] via-[#fff8f4] to-[#e8e1e9] ${compact
-            ? "h-[185px] sm:h-[195px]"
-            : "h-[220px] sm:h-[235px]"
-            }`}
-        >
+  {/* SIGNATURE BADGE */}
 
-          {image ? (
+  <span className="signature-badge absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur-md">
+    <Sparkles size={8} />
+    Signature
+  </span>
 
-            <img
-              src={image}
-              alt={
-                product.name
-              }
-              className="signature-image-breath h-full w-full object-cover"
-              style={{
-                animationDelay:
-                  `${index * 0.8}s`,
-              }}
-            />
+  {/* DISCOUNT */}
 
-          ) : (
+  {discountPercent > 0 && (
+    <span className="absolute right-3 top-3 z-20 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white shadow backdrop-blur-md">
+      {discountPercent}% Off
+    </span>
+  )}
 
-            <div className="h-full w-full bg-gradient-to-br from-[#e9cfd4] via-[#fff8f4] to-[#d9e5e8]" />
-          )}
+  {/* IMAGE LABEL */}
 
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#391923]/35 via-transparent to-transparent" />
-
-          {/* SIGNATURE BADGE */}
-
-          <span className="signature-badge absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur-md">
-
-            <Sparkles
-              size={8}
-            />
-
-            Signature
-          </span>
-
-          {/* DISCOUNT */}
-
-          {discountPercent > 0 && (
-
-            <span className="absolute right-3 top-3 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white shadow backdrop-blur-md">
-
-              {
-                discountPercent
-              }
-              % Off
-            </span>
-          )}
-
-          {/* IMAGE LABEL */}
-
-          <div className="absolute bottom-3 left-3">
-
-            <div className="rounded-full border border-white/25 bg-[#421724]/70 px-3 py-1.5 backdrop-blur-md">
-
-              <p className="text-[5px] font-bold uppercase tracking-[0.16em] text-white">
-                KM Cares Signature
-              </p>
-            </div>
-          </div>
-        </div>
+  <div className="absolute bottom-3 left-3 z-20">
+    <div className="rounded-full border border-white/50 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+      <p className="text-[5px] font-bold uppercase tracking-[0.16em] text-[#69283a]">
+        KM Cares Signature
+      </p>
+    </div>
+  </div>
+</div>
 
         {/* DETAILS */}
 
