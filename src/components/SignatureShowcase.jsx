@@ -565,6 +565,134 @@ function SignatureShowcase() {
               none !important;
           }
         }
+
+        @keyframes zafraniShine {
+  0% {
+    background-position: 220% center;
+  }
+
+  100% {
+    background-position: -220% center;
+  }
+}
+
+@keyframes zafraniGlow {
+  0%, 100% {
+    opacity: .2;
+    transform:
+      translate(-50%, -50%)
+      scale(.88);
+  }
+
+  50% {
+    opacity: .75;
+    transform:
+      translate(-50%, -50%)
+      scale(1.08);
+  }
+}
+
+@keyframes zafraniSparkle {
+  0%, 100% {
+    opacity: .45;
+    transform:
+      rotate(0deg)
+      scale(.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform:
+      rotate(18deg)
+      scale(1.18);
+  }
+}
+
+@keyframes zafraniLine {
+  0%, 100% {
+    transform: scaleX(.45);
+    opacity: .4;
+  }
+
+  50% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes zafraniDot {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0
+      rgba(185,123,47,0);
+  }
+
+  50% {
+    box-shadow:
+      0 0 0 5px
+      rgba(185,123,47,.14);
+  }
+}
+
+.zafrani-title {
+  background:
+    linear-gradient(
+      100deg,
+      #6e3441 0%,
+      #7e3d48 22%,
+      #c58a37 43%,
+      #e0b25d 52%,
+      #a66729 63%,
+      #773844 80%,
+      #6e3441 100%
+    );
+
+  background-size: 240% auto;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  color: transparent;
+
+  animation:
+    zafraniShine
+    4.2s linear infinite;
+
+  transition:
+    transform .3s ease,
+    filter .3s ease;
+}
+
+.zafrani-title:hover {
+  transform: translateY(-1px);
+  filter:
+    saturate(1.3)
+    brightness(.9);
+}
+
+.zafrani-glow {
+  animation:
+    zafraniGlow
+    3.8s ease-in-out infinite;
+}
+
+.zafrani-sparkle {
+  animation:
+    zafraniSparkle
+    2.4s ease-in-out infinite;
+}
+
+.zafrani-line {
+  animation:
+    zafraniLine
+    3.6s ease-in-out infinite;
+}
+
+.zafrani-dot {
+  animation:
+    zafraniDot
+    2.6s ease-in-out infinite;
+}
       `}</style>
 
       <section className="relative overflow-hidden border-y border-[#f0e1e2] bg-gradient-to-br from-[#fffaf8] via-[#fbf3f2] to-[#f5eaed] px-4 py-10 sm:px-6 sm:py-14 lg:px-9 lg:py-16">
@@ -610,43 +738,42 @@ function SignatureShowcase() {
 
               {/* SPECIAL + TYPEWRITER */}
 
-              <div className="signature-heading-area relative mx-auto mt-1 flex h-[42px] max-w-[760px] cursor-default items-center justify-center overflow-hidden sm:h-[54px] lg:mx-0 lg:h-[60px] lg:justify-start">
+              <div className="signature-heading-area relative mx-auto mt-2 flex w-full items-start justify-center overflow-visible lg:mx-0 lg:justify-start">
 
-                <div className="flex min-w-0 items-center whitespace-nowrap font-beauty font-semibold leading-none tracking-[-0.04em]">
+                <div className="flex max-w-full items-start whitespace-nowrap font-beauty font-semibold tracking-[-0.035em]">
 
                   {/* STATIC SPECIAL */}
 
-                  <span className="signature-special-word shrink-0 text-[23px] text-[#53383f] sm:text-[37px] lg:text-[44px]">
+                  <span className="signature-special-word block shrink-0 py-1 text-[22px] leading-[1.18] text-[#53383f] sm:text-[31px] lg:text-[34px] xl:text-[38px]">
                     Special
                   </span>
 
-                  {/* FIXED WIDTH TYPEWRITER AREA */}
+                  {/* TYPEWRITER FIXED WIDTH AREA */}
 
-                  <span className="relative ml-2 inline-block text-left sm:ml-3">
+                  <span className="relative ml-2 inline-block overflow-visible py-1 sm:ml-2.5">
 
-                    {/* RESERVE FULL WIDTH */}
+                    {/* INVISIBLE TEXT — WIDTH RESERVE */}
 
                     <span
                       aria-hidden="true"
-                      className="invisible whitespace-nowrap text-[23px] sm:text-[37px] lg:text-[44px]"
+                      className="invisible block whitespace-nowrap pb-[4px] text-[22px] leading-[1.18] sm:text-[31px] lg:text-[34px] xl:text-[38px]"
                     >
                       Signature Collection
                     </span>
 
                     {/* ANIMATED TEXT */}
 
-                    <span className="absolute inset-y-0 left-0 flex items-center">
+                    <span className="absolute left-0 top-1 flex items-start overflow-visible">
 
-                      <span className="signature-heading-text whitespace-nowrap text-[23px] sm:text-[37px] lg:text-[44px]">
+                      <span className="signature-heading-text block whitespace-nowrap pb-[4px] text-[22px] leading-[1.18] sm:text-[31px] lg:text-[34px] xl:text-[38px]">
                         {typedHeading}
                       </span>
 
-                      <span className="signature-type-cursor ml-[2px] inline-block h-[22px] w-[2px] shrink-0 rounded-full bg-[#70283a] sm:h-[33px] lg:h-[40px]" />
+                      <span className="signature-type-cursor ml-[3px] mt-[3px] inline-block h-[20px] w-[2px] shrink-0 rounded-full bg-[#70283a] sm:mt-[4px] sm:h-[27px] lg:h-[30px] xl:h-[34px]" />
                     </span>
                   </span>
                 </div>
               </div>
-
               {/* ANIMATED LINE */}
 
               <div className="mx-auto mt-1 h-px w-20 overflow-hidden lg:mx-0">
@@ -660,15 +787,47 @@ function SignatureShowcase() {
                 essentials.
               </p>
 
-              <div className="mt-3 flex items-center justify-center gap-2 lg:justify-start">
+              {/* SPECIAL PRODUCT NAME */}
 
-                <span className="h-px w-8 bg-gradient-to-r from-transparent to-[#9b4b5b]" />
+              <div className="mt-4 flex items-center justify-center lg:justify-start">
 
-                <span className="font-beauty text-[17px] font-semibold text-[#69484f] sm:text-[19px]">
-                  Zafrani Cream
-                </span>
+                <div className="group relative flex items-center gap-3 overflow-visible">
 
-                <span className="h-px w-8 bg-gradient-to-l from-transparent to-[#9b4b5b]" />
+                  {/* LEFT LINE */}
+
+                  <span className="zafrani-line h-px w-8 origin-right bg-gradient-to-r from-transparent via-[#a86f2f] to-[#7a3544] sm:w-10" />
+
+                  {/* TEXT AREA */}
+
+                  <div className="relative flex items-center gap-2">
+
+                    {/* SOFT GLOW */}
+
+                    <div className="zafrani-glow pointer-events-none absolute left-1/2 top-1/2 h-9 w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d9a14d]/20 blur-xl" />
+
+                    {/* SPARKLE */}
+
+                    <Sparkles
+                      size={12}
+                      className="zafrani-sparkle relative shrink-0 text-[#b1772f]"
+                    />
+
+                    {/* PRODUCT NAME */}
+
+                    <span className="zafrani-title relative whitespace-nowrap font-beauty text-[20px] font-semibold tracking-[-0.02em] sm:text-[22px] lg:text-[23px]">
+                      Zafrani Cream
+                    </span>
+
+                    {/* SMALL GOLD DOT */}
+
+                    <span className="zafrani-dot relative h-1.5 w-1.5 shrink-0 rounded-full bg-[#b97b2f]" />
+                  </div>
+
+                  {/* RIGHT LINE */}
+
+                  <span className="zafrani-line h-px w-8 origin-left bg-gradient-to-l from-transparent via-[#a86f2f] to-[#7a3544] sm:w-10" />
+
+                </div>
               </div>
             </div>
 
@@ -720,7 +879,7 @@ function SignatureShowcase() {
                     className={
                       products.length ===
                         3 &&
-                      index === 2
+                        index === 2
                         ? "sm:col-span-2 xl:col-span-1"
                         : ""
                     }
@@ -807,25 +966,25 @@ function SignatureHomeCard({
   const originalPrice =
     Number(
       product.originalPrice ||
-        0
+      0
     );
 
   const discountPrice =
     product.discountPrice
       ? Number(
-          product.discountPrice
-        )
+        product.discountPrice
+      )
       : null;
 
   const discountPercent =
     discountPrice &&
-    originalPrice > 0
+      originalPrice > 0
       ? Math.round(
-          ((originalPrice -
-            discountPrice) /
-            originalPrice) *
-            100
-        )
+        ((originalPrice -
+          discountPrice) /
+          originalPrice) *
+        100
+      )
       : 0;
 
   return (
@@ -838,7 +997,7 @@ function SignatureHomeCard({
       ) => {
         if (
           event.key ===
-            "Enter" ||
+          "Enter" ||
           event.key === " "
         ) {
           onOpen();
@@ -901,11 +1060,10 @@ function SignatureHomeCard({
         {/* IMAGE */}
 
         <div
-          className={`relative overflow-hidden bg-gradient-to-br from-[#f3e7e7] via-[#fff8f4] to-[#e8e1e9] ${
-            compact
-              ? "h-[185px] sm:h-[195px]"
-              : "h-[220px] sm:h-[235px]"
-          }`}
+          className={`relative overflow-hidden bg-gradient-to-br from-[#f3e7e7] via-[#fff8f4] to-[#e8e1e9] ${compact
+            ? "h-[185px] sm:h-[195px]"
+            : "h-[220px] sm:h-[235px]"
+            }`}
         >
 
           {image ? (
@@ -969,11 +1127,10 @@ function SignatureHomeCard({
         {/* DETAILS */}
 
         <div
-          className={`flex flex-1 flex-col ${
-            compact
-              ? "p-3.5 sm:p-4"
-              : "p-4 sm:p-5"
-          }`}
+          className={`flex flex-1 flex-col ${compact
+            ? "p-3.5 sm:p-4"
+            : "p-4 sm:p-5"
+            }`}
         >
 
           <div className="flex items-center justify-between gap-2">
@@ -999,11 +1156,10 @@ function SignatureHomeCard({
           {/* NAME */}
 
           <h3
-            className={`signature-product-name font-beauty mt-1.5 line-clamp-2 font-semibold leading-[1.04] tracking-[-0.03em] ${
-              compact
-                ? "text-[21px] sm:text-[23px]"
-                : "text-[24px] sm:text-[27px]"
-            }`}
+            className={`signature-product-name font-beauty mt-1.5 line-clamp-2 font-semibold leading-[1.04] tracking-[-0.03em] ${compact
+              ? "text-[21px] sm:text-[23px]"
+              : "text-[24px] sm:text-[27px]"
+              }`}
           >
 
             {product.name}
@@ -1038,11 +1194,10 @@ function SignatureHomeCard({
             <div className="mt-1 flex flex-wrap items-center gap-2">
 
               <span
-                className={`signature-price font-black text-[#71283a] ${
-                  compact
-                    ? "text-[17px] sm:text-[19px]"
-                    : "text-[18px] sm:text-[21px]"
-                }`}
+                className={`signature-price font-black text-[#71283a] ${compact
+                  ? "text-[17px] sm:text-[19px]"
+                  : "text-[18px] sm:text-[21px]"
+                  }`}
               >
 
                 Rs.{" "}
@@ -1078,11 +1233,10 @@ function SignatureHomeCard({
               )}
 
               <span
-                className={`relative h-1.5 w-1.5 rounded-full ${
-                  stock > 0
-                    ? "bg-emerald-500"
-                    : "bg-red-400"
-                }`}
+                className={`relative h-1.5 w-1.5 rounded-full ${stock > 0
+                  ? "bg-emerald-500"
+                  : "bg-red-400"
+                  }`}
               />
             </span>
 
@@ -1257,13 +1411,13 @@ function CardRating({
   const rating =
     Number(
       data?.averageRating ||
-        0
+      0
     );
 
   const count =
     Number(
       data?.reviewCount ||
-        0
+      0
     );
 
   return (
@@ -1311,7 +1465,7 @@ function SignatureDetailModal({
   ] = useState(
     product.images?.[0]
       ?.imageUrl ||
-      null
+    null
   );
 
   const [
@@ -1335,9 +1489,9 @@ function SignatureDetailModal({
 
   const {
     data:
-      reviewData,
+    reviewData,
     isLoading:
-      reviewsLoading,
+    reviewsLoading,
   } = useQuery({
     queryKey: [
       "signature-reviews",
@@ -1499,43 +1653,42 @@ function SignatureDetailModal({
             {product.images?.length >
               1 && (
 
-              <div className="mt-2.5 flex justify-center gap-1.5 overflow-x-auto">
+                <div className="mt-2.5 flex justify-center gap-1.5 overflow-x-auto">
 
-                {product.images.map(
-                  (
-                    image
-                  ) => (
+                  {product.images.map(
+                    (
+                      image
+                    ) => (
 
-                    <button
-                      key={
-                        image.id
-                      }
-                      type="button"
-                      onClick={() =>
-                        setActiveImage(
+                      <button
+                        key={
+                          image.id
+                        }
+                        type="button"
+                        onClick={() =>
+                          setActiveImage(
+                            image.imageUrl
+                          )
+                        }
+                        className={`h-10 w-10 shrink-0 overflow-hidden rounded-[9px] border bg-white ${activeImage ===
                           image.imageUrl
-                        )
-                      }
-                      className={`h-10 w-10 shrink-0 overflow-hidden rounded-[9px] border bg-white ${
-                        activeImage ===
-                        image.imageUrl
                           ? "border-[#4e94aa]"
                           : "border-[#d9dfe1]"
-                      }`}
-                    >
+                          }`}
+                      >
 
-                      <img
-                        src={
-                          image.imageUrl
-                        }
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  )
-                )}
-              </div>
-            )}
+                        <img
+                          src={
+                            image.imageUrl
+                          }
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
           </div>
 
           {/* DETAILS */}
@@ -1576,7 +1729,7 @@ function SignatureDetailModal({
                 {Number(
                   reviewData
                     ?.averageRating ||
-                    0
+                  0
                 ).toFixed(1)}
                 {" "}
                 (
@@ -1620,13 +1773,12 @@ function SignatureDetailModal({
             <div className="mt-3 flex items-center gap-2 text-[7px] text-[#917c80]">
 
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  Number(
-                    product.stock
-                  ) > 0
-                    ? "bg-emerald-500"
-                    : "bg-red-400"
-                }`}
+                className={`h-1.5 w-1.5 rounded-full ${Number(
+                  product.stock
+                ) > 0
+                  ? "bg-emerald-500"
+                  : "bg-red-400"
+                  }`}
               />
 
               {Number(
@@ -1652,7 +1804,7 @@ function SignatureDetailModal({
                         Math.max(
                           1,
                           current -
-                            1
+                          1
                         )
                     )
                   }
@@ -1681,10 +1833,10 @@ function SignatureDetailModal({
                         Math.min(
                           Number(
                             product.stock ||
-                              1
+                            1
                           ),
                           current +
-                            1
+                          1
                         )
                     )
                   }
@@ -1807,7 +1959,7 @@ function SignatureDetailModal({
                           size={14}
                           className={
                             rating <=
-                            form.rating
+                              form.rating
                               ? "fill-[#d0a04b] text-[#d0a04b]"
                               : "text-[#ddd1d2]"
                           }
@@ -2016,9 +2168,9 @@ function Stars({
             size={size}
             className={
               index <
-              Math.round(
-                rating
-              )
+                Math.round(
+                  rating
+                )
                 ? "fill-[#d0a04b] text-[#d0a04b]"
                 : "text-[#ddd1d2]"
             }
