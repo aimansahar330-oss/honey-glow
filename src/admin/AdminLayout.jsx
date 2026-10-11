@@ -19,6 +19,7 @@ import {
   Moon,
   Package,
   ShoppingBag,
+  Settings,
   Sun,
   Tags,
   Users,
@@ -66,6 +67,11 @@ const menuItems = [
     path: "/admin/customers",
     icon: Users,
   },
+  {
+  name: "Settings",
+  icon: Settings,
+  path: "/admin/settings",
+},
 ];
 
 /* =====================================================

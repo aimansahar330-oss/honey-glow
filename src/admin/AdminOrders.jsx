@@ -211,8 +211,13 @@ function AdminOrders() {
           ],
         });
 
-        setSelectedOrder(null);
-        setDeleteTarget(null);
+        setSelectedOrder(
+          null
+        );
+
+        setDeleteTarget(
+          null
+        );
       },
     });
 
@@ -226,6 +231,7 @@ function AdminOrders() {
       <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
         <div>
+
           <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-[#a86674]">
             Sales
           </p>
@@ -262,6 +268,7 @@ function AdminOrders() {
         <div className="grid gap-2.5 lg:grid-cols-[1fr_170px_190px]">
 
           {/* SEARCH */}
+
           <div className="flex items-center rounded-xl border border-[#e6d8d5] bg-[#fcf8f7] px-3 dark:border-white/10 dark:bg-[#120e10]">
 
             <Search
@@ -282,6 +289,7 @@ function AdminOrders() {
           </div>
 
           {/* STATUS FILTER */}
+
           <FilterSelect
             value={
               statusFilter
@@ -294,22 +302,27 @@ function AdminOrders() {
                 "ALL",
                 "All Statuses",
               ],
+
               [
                 "PENDING",
                 "Pending",
               ],
+
               [
                 "PROCESSING",
                 "Processing",
               ],
+
               [
                 "SHIPPED",
                 "Shipped",
               ],
+
               [
                 "DELIVERED",
                 "Delivered",
               ],
+
               [
                 "CANCELLED",
                 "Cancelled",
@@ -318,6 +331,7 @@ function AdminOrders() {
           />
 
           {/* PAYMENT FILTER */}
+
           <FilterSelect
             value={
               paymentFilter
@@ -330,18 +344,22 @@ function AdminOrders() {
                 "ALL",
                 "All Payments",
               ],
+
               [
                 "PENDING_VERIFICATION",
                 "Needs Verification",
               ],
+
               [
                 "COD_PENDING",
                 "COD Pending",
               ],
+
               [
                 "PAID",
                 "Paid",
               ],
+
               [
                 "REJECTED",
                 "Rejected",
@@ -358,17 +376,23 @@ function AdminOrders() {
       {isLoading ? (
         <OrderSkeleton />
       ) : isError ? (
+
         <div className="rounded-[22px] border border-red-200 bg-red-50 p-8 text-center text-xs text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
           Unable to load orders.
         </div>
+
       ) : filteredOrders.length ===
         0 ? (
+
         <EmptyOrders />
+
       ) : (
+
         <div className="space-y-3">
 
           {filteredOrders.map(
             (order) => (
+
               <OrderRow
                 key={
                   order.id
@@ -397,6 +421,7 @@ function AdminOrders() {
       ========================= */}
 
       {selectedOrder && (
+
         <OrderDetailsModal
           order={
             selectedOrder
@@ -429,6 +454,7 @@ function AdminOrders() {
       ========================= */}
 
       {deleteTarget && (
+
         <DeleteOrderModal
           order={
             deleteTarget
@@ -476,7 +502,9 @@ function OrderRow({
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
           {/* ORDER */}
+
           <div>
+
             <p className="text-[7px] font-bold uppercase tracking-[0.15em] text-[#a58288]">
               Order
             </p>
@@ -493,7 +521,9 @@ function OrderRow({
           </div>
 
           {/* CUSTOMER */}
+
           <div>
+
             <p className="text-[7px] font-bold uppercase tracking-[0.15em] text-[#a58288]">
               Customer
             </p>
@@ -508,7 +538,9 @@ function OrderRow({
           </div>
 
           {/* PAYMENT */}
+
           <div>
+
             <p className="text-[7px] font-bold uppercase tracking-[0.15em] text-[#a58288]">
               Payment
             </p>
@@ -520,6 +552,7 @@ function OrderRow({
             </p>
 
             <div className="mt-1.5">
+
               <PaymentBadge
                 status={
                   order.paymentStatus
@@ -529,19 +562,23 @@ function OrderRow({
           </div>
 
           {/* TOTAL */}
+
           <div>
+
             <p className="text-[7px] font-bold uppercase tracking-[0.15em] text-[#a58288]">
               Total
             </p>
 
             <p className="mt-1 text-[12px] font-bold text-[#733743] dark:text-[#efbfc8]">
               Rs.{" "}
+
               {Number(
                 order.total
               ).toLocaleString()}
             </p>
 
             <div className="mt-1.5">
+
               <OrderStatusBadge
                 status={
                   order.status
@@ -552,9 +589,11 @@ function OrderRow({
         </div>
 
         {/* ACTIONS */}
+
         <div className="flex items-center gap-2">
 
           {/* VIEW */}
+
           <button
             type="button"
             onClick={
@@ -570,6 +609,7 @@ function OrderRow({
           </button>
 
           {/* DELETE */}
+
           <button
             type="button"
             onClick={
@@ -610,6 +650,7 @@ function OrderDetailsModal({
       onClick={onClose}
       className="fixed inset-0 z-[150] flex items-center justify-center bg-[#29181d]/55 p-3 backdrop-blur-md sm:p-5"
     >
+
       <div
         onClick={(e) =>
           e.stopPropagation()
@@ -618,9 +659,11 @@ function OrderDetailsModal({
       >
 
         {/* HEADER */}
+
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-[#ead9d6] bg-[#fffaf9]/95 px-5 py-4 backdrop-blur-xl dark:border-white/10 dark:bg-[#181214]/95">
 
           <div>
+
             <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-[#a36d76]">
               Order Detail
             </p>
@@ -633,6 +676,7 @@ function OrderDetailsModal({
           <div className="flex items-center gap-2">
 
             {/* DELETE FROM DETAILS */}
+
             <button
               type="button"
               onClick={
@@ -647,6 +691,7 @@ function OrderDetailsModal({
             </button>
 
             {/* CLOSE */}
+
             <button
               type="button"
               onClick={
@@ -664,15 +709,18 @@ function OrderDetailsModal({
         <div className="grid gap-5 p-5 lg:grid-cols-[1fr_300px]">
 
           {/* LEFT */}
+
           <div className="space-y-5">
 
             {/* CUSTOMER */}
+
             <DetailSection
               icon={
                 User
               }
               title="Customer Details"
             >
+
               <div className="grid gap-3 sm:grid-cols-2">
 
                 <InfoItem
@@ -714,6 +762,7 @@ function OrderDetailsModal({
               />
 
               {order.notes && (
+
                 <InfoItem
                   label="Notes"
                   value={
@@ -725,25 +774,30 @@ function OrderDetailsModal({
             </DetailSection>
 
             {/* ITEMS */}
+
             <DetailSection
               icon={
                 ShoppingBag
               }
               title="Order Items"
             >
+
               <div className="space-y-3">
 
                 {order.items?.map(
                   (item) => (
+
                     <div
                       key={
                         item.id
                       }
                       className="flex items-center gap-3 rounded-xl border border-[#ead9d6] bg-[#fff8f6] p-2.5 dark:border-white/10 dark:bg-white/5"
                     >
+
                       <div className="h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-[#f0dfdc]">
 
                         {item.imageUrl ? (
+
                           <img
                             src={
                               item.imageUrl
@@ -753,8 +807,11 @@ function OrderDetailsModal({
                             }
                             className="h-full w-full object-cover"
                           />
+
                         ) : (
+
                           <div className="flex h-full w-full items-center justify-center">
+
                             <ImageIcon
                               size={
                                 16
@@ -783,6 +840,7 @@ function OrderDetailsModal({
 
                       <p className="text-[9px] font-bold text-[#743743] dark:text-[#edbbc5]">
                         Rs.{" "}
+
                         {(
                           Number(
                             item.price
@@ -799,7 +857,9 @@ function OrderDetailsModal({
             </DetailSection>
 
             {/* PAYMENT PROOF */}
+
             {walletPayment && (
+
               <DetailSection
                 icon={
                   CircleDollarSign
@@ -833,11 +893,13 @@ function OrderDetailsModal({
                   />
 
                   <div>
+
                     <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-[#a07c83]">
                       Payment Status
                     </p>
 
                     <div className="mt-1.5">
+
                       <PaymentBadge
                         status={
                           order.paymentStatus
@@ -848,7 +910,9 @@ function OrderDetailsModal({
                 </div>
 
                 {/* SCREENSHOT */}
+
                 {order.paymentProofUrl && (
+
                   <div className="mt-4">
 
                     <p className="mb-2 text-[7px] font-bold uppercase tracking-[0.14em] text-[#a07c83]">
@@ -875,8 +939,10 @@ function OrderDetailsModal({
                 )}
 
                 {/* PAYMENT ACTIONS */}
+
                 {order.paymentStatus ===
                   "PENDING_VERIFICATION" && (
+
                   <div className="mt-4 flex flex-wrap gap-2">
 
                     <button
@@ -939,9 +1005,11 @@ function OrderDetailsModal({
           </div>
 
           {/* RIGHT */}
+
           <aside className="space-y-4">
 
             {/* SUMMARY */}
+
             <div className="rounded-[20px] border border-[#e3cbc7] bg-gradient-to-br from-[#fff8f6] to-[#f7e6e2] p-4 dark:border-white/10 dark:from-[#21181b] dark:to-[#1b1416]">
 
               <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-[#a07179]">
@@ -956,6 +1024,21 @@ function OrderDetailsModal({
                     order.subtotal
                   }
                 />
+
+                {/* DELIVERY METHOD */}
+
+                <div className="flex items-center justify-between gap-3">
+
+                  <span className="text-[9px] text-[#72555c] dark:text-[#baa3a8]">
+                    Delivery Method
+                  </span>
+
+                  <span className="text-[9px] font-bold text-[#713541] dark:text-[#efb9c4]">
+                    {shippingMethodLabel(
+                      order.shippingMethod
+                    )}
+                  </span>
+                </div>
 
                 <PriceRow
                   label="Delivery"
@@ -974,6 +1057,7 @@ function OrderDetailsModal({
 
                     <span className="text-[16px] font-bold text-[#713541] dark:text-[#efb9c4]">
                       Rs.{" "}
+
                       {Number(
                         order.total
                       ).toLocaleString()}
@@ -984,6 +1068,7 @@ function OrderDetailsModal({
             </div>
 
             {/* STATUS */}
+
             <div className="rounded-[20px] border border-[#e3cbc7] bg-white p-4 dark:border-white/10 dark:bg-[#1b1518]">
 
               <div className="flex items-center gap-2">
@@ -999,6 +1084,7 @@ function OrderDetailsModal({
               </div>
 
               <div className="mt-3">
+
                 <OrderStatusBadge
                   status={
                     order.status
@@ -1049,6 +1135,7 @@ function OrderDetailsModal({
             </div>
 
             {/* META */}
+
             <div className="rounded-[20px] border border-[#e3cbc7] bg-white p-4 dark:border-white/10 dark:bg-[#1b1518]">
 
               <p className="text-[8px] font-bold uppercase tracking-[0.15em] text-[#9c737b]">
@@ -1103,6 +1190,7 @@ function DeleteOrderModal({
       }
       className="fixed inset-0 z-[200] flex items-center justify-center bg-[#26171b]/65 p-4 backdrop-blur-md"
     >
+
       <div
         onClick={(e) =>
           e.stopPropagation()
@@ -1113,7 +1201,9 @@ function DeleteOrderModal({
         <div className="rounded-[19px] border border-white/80 bg-white/60 p-5 dark:border-white/5 dark:bg-white/5">
 
           {/* ICON */}
+
           <div className="flex h-11 w-11 items-center justify-center rounded-full bg-red-50 text-red-500 dark:bg-red-500/10">
+
             <Trash2
               size={18}
             />
@@ -1129,17 +1219,20 @@ function DeleteOrderModal({
 
           <p className="mt-3 text-[10px] leading-5 text-[#8c7479] dark:text-[#af999e]">
             Order{" "}
+
             <strong className="text-[#683c45] dark:text-[#e4c8ce]">
               {order.trackingNumber}
             </strong>{" "}
+
             will be permanently deleted.
           </p>
 
           {/* STOCK NOTE */}
+
           {order.status !==
             "DELIVERED" && (
-            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[9px] leading-4 text-amber-700">
 
+            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-[9px] leading-4 text-amber-700">
               Product quantities from
               this order will be returned
               to stock because the order
@@ -1148,10 +1241,11 @@ function DeleteOrderModal({
           )}
 
           {/* DELIVERED WARNING */}
+
           {order.status ===
             "DELIVERED" && (
-            <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-[9px] leading-4 text-red-600">
 
+            <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-[9px] leading-4 text-red-600">
               This order is already
               delivered. Its product stock
               will not be changed.
@@ -1159,7 +1253,9 @@ function DeleteOrderModal({
           )}
 
           {/* PAYMENT PROOF NOTE */}
+
           {order.paymentProofUrl && (
+
             <p className="mt-3 text-[9px] leading-4 text-[#977f84]">
               The uploaded payment
               screenshot will also be
@@ -1168,13 +1264,16 @@ function DeleteOrderModal({
           )}
 
           {/* ERROR */}
+
           {error && (
+
             <div className="mt-4 rounded-xl border border-red-100 bg-red-50 px-3 py-2.5 text-[9px] text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
               {error}
             </div>
           )}
 
           {/* BUTTONS */}
+
           <div className="mt-6 flex justify-end gap-2">
 
             <button
@@ -1232,6 +1331,7 @@ function DetailSection({
       <div className="mb-4 flex items-center gap-2">
 
         <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#f1dfdc] text-[#83424e] dark:bg-[#352328]">
+
           <Icon
             size={14}
           />
@@ -1262,6 +1362,7 @@ function InfoItem({
           : ""
       }
     >
+
       <p className="text-[7px] font-bold uppercase tracking-[0.14em] text-[#a07c83]">
         {label}
       </p>
@@ -1286,6 +1387,7 @@ function PriceRow({
 
       <span className="text-[9px] font-bold text-[#61434a] dark:text-[#d7bdc2]">
         Rs.{" "}
+
         {Number(
           value
         ).toLocaleString()}
@@ -1303,12 +1405,14 @@ function MetaRow({
     <div className="flex items-start gap-2.5">
 
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f2e2df] text-[#854550] dark:bg-[#332328]">
+
         <Icon
           size={11}
         />
       </div>
 
       <div>
+
         <p className="text-[7px] uppercase tracking-[0.12em] text-[#a07d84]">
           {label}
         </p>
@@ -1340,11 +1444,13 @@ function FilterSelect({
         }
         className="h-full min-h-[42px] w-full appearance-none rounded-xl border border-[#e4d2cf] bg-[#fcf8f7] px-3 pr-8 text-[8px] font-semibold text-[#72545b] outline-none dark:border-white/10 dark:bg-[#120e10] dark:text-white"
       >
+
         {options.map(
           ([
             optionValue,
             label,
           ]) => (
+
             <option
               key={
                 optionValue
@@ -1443,6 +1549,34 @@ function PaymentBadge({
   );
 }
 
+/* ======================================
+   DELIVERY METHOD LABEL
+====================================== */
+
+function shippingMethodLabel(
+  method
+) {
+  if (
+    method === "express"
+  ) {
+    return "Express Delivery";
+  }
+
+  if (
+    method === "overnight"
+  ) {
+    return "Overnight Delivery";
+  }
+
+  if (
+    method === "urgent"
+  ) {
+    return "Urgent Delivery";
+  }
+
+  return "Standard Delivery";
+}
+
 function paymentMethodLabel(
   method
 ) {
@@ -1513,6 +1647,7 @@ function OrderSkeleton() {
         length: 5,
       }).map(
         (_, index) => (
+
           <div
             key={
               index

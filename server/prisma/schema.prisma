@@ -120,6 +120,8 @@ model Order {
   deliveryCharge Decimal @db.Decimal(10, 2)
   total          Decimal @db.Decimal(10, 2)
 
+  shippingMethod String @default("standard")
+
   paymentMethod String @default("COD")
   paymentStatus String @default("UNPAID")
 
@@ -266,4 +268,37 @@ model SignatureProductReview {
   @@index([signatureProductId])
   @@index([createdAt])
   @@map("signature_product_reviews")
+}
+
+
+
+model Settings {
+  id  Int    @id @default(autoincrement())
+  key String @unique @default("global")
+
+  deliveryEnabled Boolean @default(true)
+
+  standardEnabled       Boolean @default(true)
+  standardCharge        Int     @default(200)
+  standardEstimatedDays Int     @default(5)
+
+  expressEnabled       Boolean @default(true)
+  expressCharge        Int     @default(350)
+  expressEstimatedDays Int     @default(2)
+
+  overnightEnabled       Boolean @default(false)
+  overnightCharge        Int     @default(500)
+  overnightEstimatedDays Int     @default(1)
+
+  urgentEnabled           Boolean  @default(false)
+  urgentCharge            Int      @default(300)
+  urgentEstimatedHoursMin Int      @default(1)
+  urgentEstimatedHoursMax Int      @default(2)
+  urgentCities            String[] @default(["lahore"])
+
+  freeDeliveryEnabled   Boolean @default(false)
+  freeDeliveryThreshold Int     @default(5000)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

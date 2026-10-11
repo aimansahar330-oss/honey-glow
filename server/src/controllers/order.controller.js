@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import prisma from "../lib/prisma.js";
+
 import {
   deleteImage,
   uploadImage,
@@ -33,6 +34,59 @@ function normalizeProductType(type) {
 }
 
 /* =========================================
+   CITY NORMALIZER
+========================================= */
+
+function normalizeCity(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\bcity\b/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/* =========================================
+   GET OR CREATE DELIVERY SETTINGS
+========================================= */
+
+async function getOrCreateDeliverySettings() {
+  return prisma.settings.upsert({
+    where: {
+      key: "global",
+    },
+
+    update: {},
+
+    create: {
+      key: "global",
+
+      deliveryEnabled: true,
+
+      standardEnabled: true,
+      standardCharge: 200,
+      standardEstimatedDays: 5,
+
+      expressEnabled: true,
+      expressCharge: 350,
+      expressEstimatedDays: 2,
+
+      overnightEnabled: false,
+      overnightCharge: 500,
+      overnightEstimatedDays: 1,
+
+      urgentEnabled: false,
+      urgentCharge: 300,
+      urgentEstimatedHoursMin: 1,
+      urgentEstimatedHoursMax: 2,
+      urgentCities: ["lahore"],
+
+      freeDeliveryEnabled: false,
+      freeDeliveryThreshold: 5000,
+    },
+  });
+}
+
+/* =========================================
    CREATE GUEST ORDER
 ========================================= */
 
@@ -51,7 +105,11 @@ export const createOrder = async (
       address,
       city,
       notes,
+
+      shippingMethod = "standard",
+
       paymentMethod = "COD",
+
       paymentSenderNumber,
       paymentReference,
     } = req.body;
@@ -94,7 +152,8 @@ export const createOrder = async (
     if (!address?.trim()) {
       return res.status(400).json({
         success: false,
-        message: "Delivery address is required.",
+        message:
+          "Delivery address is required.",
       });
     }
 
@@ -119,6 +178,13 @@ export const createOrder = async (
        PAYMENT METHOD
     ===================================== */
 
+    const normalizedPaymentMethod =
+      String(
+        paymentMethod || "COD"
+      )
+        .trim()
+        .toUpperCase();
+
     const allowedPaymentMethods = [
       "COD",
       "JAZZCASH",
@@ -127,18 +193,154 @@ export const createOrder = async (
 
     if (
       !allowedPaymentMethods.includes(
-        paymentMethod
+        normalizedPaymentMethod
       )
     ) {
       return res.status(400).json({
         success: false,
-        message: "Invalid payment method.",
+        message:
+          "Invalid payment method.",
       });
     }
 
     const walletPayment =
-      paymentMethod === "JAZZCASH" ||
-      paymentMethod === "EASYPAISA";
+      normalizedPaymentMethod ===
+        "JAZZCASH" ||
+      normalizedPaymentMethod ===
+        "EASYPAISA";
+
+    /* =====================================
+       DELIVERY SETTINGS + METHOD VALIDATION
+    ===================================== */
+
+    const normalizedShippingMethod =
+      String(
+        shippingMethod || "standard"
+      )
+        .trim()
+        .toLowerCase();
+
+    const allowedShippingMethods = [
+      "standard",
+      "express",
+      "overnight",
+      "urgent",
+    ];
+
+    if (
+      !allowedShippingMethods.includes(
+        normalizedShippingMethod
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid delivery method.",
+      });
+    }
+
+    const deliverySettings =
+      await getOrCreateDeliverySettings();
+
+    if (
+      !deliverySettings.deliveryEnabled
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Delivery service is currently unavailable.",
+      });
+    }
+
+    const deliveryMethods = {
+      standard: {
+        enabled:
+          deliverySettings.standardEnabled,
+
+        charge: Number(
+          deliverySettings.standardCharge
+        ),
+      },
+
+      express: {
+        enabled:
+          deliverySettings.expressEnabled,
+
+        charge: Number(
+          deliverySettings.expressCharge
+        ),
+      },
+
+      overnight: {
+        enabled:
+          deliverySettings.overnightEnabled,
+
+        charge: Number(
+          deliverySettings.overnightCharge
+        ),
+      },
+
+      urgent: {
+        enabled:
+          deliverySettings.urgentEnabled,
+
+        charge: Number(
+          deliverySettings.urgentCharge
+        ),
+      },
+    };
+
+    const selectedDelivery =
+      deliveryMethods[
+        normalizedShippingMethod
+      ];
+
+    if (
+      !selectedDelivery ||
+      !selectedDelivery.enabled
+    ) {
+      return res.status(400).json({
+        success: false,
+
+        message:
+          "Selected delivery method is currently unavailable.",
+      });
+    }
+
+    /* =====================================
+       URGENT CITY VALIDATION
+    ===================================== */
+
+    if (
+      normalizedShippingMethod ===
+      "urgent"
+    ) {
+      const normalizedCustomerCity =
+        normalizeCity(city);
+
+      const urgentCities =
+        Array.isArray(
+          deliverySettings.urgentCities
+        )
+          ? deliverySettings.urgentCities.map(
+              normalizeCity
+            )
+          : [];
+
+      if (
+        !normalizedCustomerCity ||
+        !urgentCities.includes(
+          normalizedCustomerCity
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Urgent delivery is not available in your city.",
+        });
+      }
+    }
 
     /* =====================================
        WALLET PAYMENT VALIDATION
@@ -150,6 +352,7 @@ export const createOrder = async (
       ) {
         return res.status(400).json({
           success: false,
+
           message:
             "Payment sender number is required.",
         });
@@ -160,6 +363,7 @@ export const createOrder = async (
       ) {
         return res.status(400).json({
           success: false,
+
           message:
             "Transaction ID is required.",
         });
@@ -168,12 +372,15 @@ export const createOrder = async (
       if (!req.file) {
         return res.status(400).json({
           success: false,
+
           message:
             "Payment screenshot is required.",
         });
       }
 
-      /* DUPLICATE TRANSACTION */
+      /* =====================================
+         DUPLICATE TRANSACTION ID
+      ===================================== */
 
       const existingReference =
         await prisma.order.findUnique({
@@ -186,14 +393,14 @@ export const createOrder = async (
       if (existingReference) {
         return res.status(409).json({
           success: false,
+
           message:
             "This transaction ID has already been used.",
         });
       }
 
       /* =====================================
-         CLOUDINARY UPLOAD
-         TRANSACTION KE BAHAR
+         PAYMENT SCREENSHOT UPLOAD
       ===================================== */
 
       const uploadResult =
@@ -215,7 +422,7 @@ export const createOrder = async (
        NORMALIZE + MERGE CART ITEMS
 
        REGULAR-1 aur SIGNATURE-1
-       dono separate rahenge.
+       separate rahenge
     ===================================== */
 
     const itemMap = new Map();
@@ -228,15 +435,11 @@ export const createOrder = async (
 
       const rawId =
         productType === "SIGNATURE"
-          ? (
-              item.signatureProductId ??
-              item.productId ??
-              item.id
-            )
-          : (
-              item.productId ??
-              item.id
-            );
+          ? item.signatureProductId ??
+            item.productId ??
+            item.id
+          : item.productId ??
+            item.id;
 
       const id =
         Number(rawId);
@@ -276,7 +479,8 @@ export const createOrder = async (
               : null,
 
           signatureProductId:
-            productType === "SIGNATURE"
+            productType ===
+            "SIGNATURE"
               ? id
               : null,
 
@@ -290,12 +494,6 @@ export const createOrder = async (
         itemMap.values()
       );
 
-    const deliveryCharge =
-      Number(
-        process.env
-          .DELIVERY_CHARGE
-      ) || 200;
-
     /* =====================================
        DATABASE TRANSACTION
     ===================================== */
@@ -304,7 +502,7 @@ export const createOrder = async (
       await prisma.$transaction(
         async (tx) => {
           /* =================================
-             SPLIT PRODUCT IDS
+             SPLIT CART ITEMS
           ================================= */
 
           const regularItems =
@@ -387,26 +585,29 @@ export const createOrder = async (
             0
           ) {
             signatureProducts =
-              await tx.signatureProduct.findMany({
-                where: {
-                  id: {
-                    in:
-                      signatureProductIds,
-                  },
-
-                  isActive: true,
-                },
-
-                include: {
-                  images: {
-                    orderBy: {
-                      position: "asc",
+              await tx.signatureProduct.findMany(
+                {
+                  where: {
+                    id: {
+                      in:
+                        signatureProductIds,
                     },
 
-                    take: 1,
+                    isActive: true,
                   },
-                },
-              });
+
+                  include: {
+                    images: {
+                      orderBy: {
+                        position:
+                          "asc",
+                      },
+
+                      take: 1,
+                    },
+                  },
+                }
+              );
           }
 
           if (
@@ -419,7 +620,7 @@ export const createOrder = async (
           }
 
           /* =================================
-             MAP PRODUCTS
+             PRODUCT MAPS
           ================================= */
 
           const regularProductMap =
@@ -513,27 +714,31 @@ export const createOrder = async (
                 item.quantity,
             });
 
-            /* ATOMIC STOCK DECREASE */
+            /* =================================
+               ATOMIC STOCK DECREASE
+            ================================= */
 
             const stockResult =
-              await tx.product.updateMany({
-                where: {
-                  id:
-                    product.id,
+              await tx.product.updateMany(
+                {
+                  where: {
+                    id:
+                      product.id,
 
-                  stock: {
-                    gte:
-                      item.quantity,
+                    stock: {
+                      gte:
+                        item.quantity,
+                    },
                   },
-                },
 
-                data: {
-                  stock: {
-                    decrement:
-                      item.quantity,
+                  data: {
+                    stock: {
+                      decrement:
+                        item.quantity,
+                    },
                   },
-                },
-              });
+                }
+              );
 
             if (
               stockResult.count !== 1
@@ -632,27 +837,31 @@ export const createOrder = async (
                 item.quantity,
             });
 
-            /* SIGNATURE STOCK */
+            /* =================================
+               SIGNATURE STOCK DECREASE
+            ================================= */
 
             const stockResult =
-              await tx.signatureProduct.updateMany({
-                where: {
-                  id:
-                    product.id,
+              await tx.signatureProduct.updateMany(
+                {
+                  where: {
+                    id:
+                      product.id,
 
-                  stock: {
-                    gte:
-                      item.quantity,
+                    stock: {
+                      gte:
+                        item.quantity,
+                    },
                   },
-                },
 
-                data: {
-                  stock: {
-                    decrement:
-                      item.quantity,
+                  data: {
+                    stock: {
+                      decrement:
+                        item.quantity,
+                    },
                   },
-                },
-              });
+                }
+              );
 
             if (
               stockResult.count !== 1
@@ -687,7 +896,35 @@ export const createOrder = async (
           }
 
           /* =================================
-             TOTAL
+             FREE DELIVERY
+          ================================= */
+
+          const freeDeliveryApplies =
+            Boolean(
+              deliverySettings
+                .freeDeliveryEnabled
+            ) &&
+            subtotal >=
+              Number(
+                deliverySettings
+                  .freeDeliveryThreshold ||
+                  0
+              );
+
+          /* =================================
+             DELIVERY CHARGE
+          ================================= */
+
+          const deliveryCharge =
+            freeDeliveryApplies
+              ? 0
+              : Number(
+                  selectedDelivery
+                    .charge || 0
+                );
+
+          /* =================================
+             FINAL TOTAL
           ================================= */
 
           const total =
@@ -698,7 +935,8 @@ export const createOrder = async (
             createTrackingNumber();
 
           const paymentStatus =
-            paymentMethod === "COD"
+            normalizedPaymentMethod ===
+            "COD"
               ? "COD_PENDING"
               : "PENDING_VERIFICATION";
 
@@ -737,7 +975,11 @@ export const createOrder = async (
 
                 total,
 
-                paymentMethod,
+                shippingMethod:
+                  normalizedShippingMethod,
+
+                paymentMethod:
+                  normalizedPaymentMethod,
 
                 paymentStatus,
 
@@ -780,7 +1022,7 @@ export const createOrder = async (
             });
 
           /* =================================
-             ORDER NOTIFICATION
+             NEW ORDER NOTIFICATION
           ================================= */
 
           notifications.unshift({
@@ -800,7 +1042,7 @@ export const createOrder = async (
           });
 
           /* =================================
-             PAYMENT NOTIFICATION
+             PAYMENT VERIFICATION NOTIFICATION
           ================================= */
 
           if (walletPayment) {
@@ -813,7 +1055,7 @@ export const createOrder = async (
 
               message:
                 `${
-                  paymentMethod ===
+                  normalizedPaymentMethod ===
                   "JAZZCASH"
                     ? "JazzCash"
                     : "EasyPaisa"
@@ -825,21 +1067,23 @@ export const createOrder = async (
           }
 
           /* =================================
-             CREATE ALL NOTIFICATIONS
-             SINGLE QUERY
+             CREATE NOTIFICATIONS
           ================================= */
 
           if (
             notifications.length > 0
           ) {
-            await tx.notification.createMany({
-              data:
-                notifications,
-            });
+            await tx.notification.createMany(
+              {
+                data:
+                  notifications,
+              }
+            );
           }
 
           return createdOrder;
         },
+
         {
           maxWait: 15000,
           timeout: 30000,
@@ -847,7 +1091,7 @@ export const createOrder = async (
       );
 
     /* =====================================
-       RESPONSE
+       SUCCESS RESPONSE
     ===================================== */
 
     return res.status(201).json({
@@ -881,6 +1125,9 @@ export const createOrder = async (
             order.total
           ),
 
+        shippingMethod:
+          order.shippingMethod,
+
         paymentMethod:
           order.paymentMethod,
 
@@ -900,8 +1147,7 @@ export const createOrder = async (
     ===================================== */
 
     if (
-      uploadedPaymentProof
-        ?.publicId
+      uploadedPaymentProof?.publicId
     ) {
       try {
         await deleteImage(
@@ -917,7 +1163,9 @@ export const createOrder = async (
       }
     }
 
-    /* DUPLICATE UNIQUE FIELD */
+    /* =====================================
+       UNIQUE FIELD ERROR
+    ===================================== */
 
     if (
       error?.code === "P2002"
@@ -930,7 +1178,9 @@ export const createOrder = async (
       });
     }
 
-    /* TRANSACTION START ERROR */
+    /* =====================================
+       TRANSACTION ERROR
+    ===================================== */
 
     if (
       error?.code === "P2028" ||
@@ -999,6 +1249,8 @@ export const trackOrder = async (
           deliveryCharge: true,
 
           total: true,
+
+          shippingMethod: true,
 
           paymentMethod: true,
 
@@ -1101,6 +1353,8 @@ export const getAdminOrders = async (
 
     const where = {};
 
+    /* STATUS FILTER */
+
     if (
       status &&
       status !== "ALL"
@@ -1109,6 +1363,8 @@ export const getAdminOrders = async (
         status;
     }
 
+    /* PAYMENT FILTER */
+
     if (
       paymentStatus &&
       paymentStatus !== "ALL"
@@ -1116,6 +1372,8 @@ export const getAdminOrders = async (
       where.paymentStatus =
         paymentStatus;
     }
+
+    /* SEARCH */
 
     if (search?.trim()) {
       const keyword =
@@ -1232,7 +1490,8 @@ export const getAdminOrderById =
       if (
         !Number.isInteger(
           id
-        )
+        ) ||
+        id <= 0
       ) {
         return res.status(400).json({
           success: false,
@@ -1321,6 +1580,18 @@ export const updateOrderStatus =
         status,
       } = req.body;
 
+      if (
+        !Number.isInteger(id) ||
+        id <= 0
+      ) {
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Invalid order ID.",
+        });
+      }
+
       const allowedStatuses = [
         "PENDING",
         "PROCESSING",
@@ -1362,7 +1633,9 @@ export const updateOrderStatus =
         status,
       };
 
-      /* COD DELIVERED = PAID */
+      /* =====================================
+         COD DELIVERED = PAID
+      ===================================== */
 
       if (
         status ===
@@ -1417,6 +1690,18 @@ export const updatePaymentStatus =
       const {
         paymentStatus,
       } = req.body;
+
+      if (
+        !Number.isInteger(id) ||
+        id <= 0
+      ) {
+        return res.status(400).json({
+          success: false,
+
+          message:
+            "Invalid order ID.",
+        });
+      }
 
       const allowedStatuses = [
         "PENDING_VERIFICATION",
@@ -1495,9 +1780,8 @@ export const deleteOrder = async (
       );
 
     if (
-      !Number.isInteger(
-        id
-      )
+      !Number.isInteger(id) ||
+      id <= 0
     ) {
       return res.status(400).json({
         success: false,
@@ -1533,6 +1817,15 @@ export const deleteOrder = async (
 
     await prisma.$transaction(
       async (tx) => {
+        /*
+          Delivered order ka stock restore
+          nahi karna.
+
+          Pending / Processing / Shipped /
+          Cancelled order delete hone par
+          stock wapas add hoga.
+        */
+
         if (
           order.status !==
           "DELIVERED"
@@ -1546,7 +1839,9 @@ export const deleteOrder = async (
                 item.productType
               );
 
-            /* SIGNATURE PRODUCT */
+            /* =================================
+               SIGNATURE PRODUCT
+            ================================= */
 
             if (
               productType ===
@@ -1559,10 +1854,38 @@ export const deleteOrder = async (
                 continue;
               }
 
-              await tx.signatureProduct.updateMany({
+              await tx.signatureProduct.updateMany(
+                {
+                  where: {
+                    id:
+                      item.signatureProductId,
+                  },
+
+                  data: {
+                    stock: {
+                      increment:
+                        item.quantity,
+                    },
+                  },
+                }
+              );
+
+              continue;
+            }
+
+            /* =================================
+               REGULAR PRODUCT
+            ================================= */
+
+            if (!item.productId) {
+              continue;
+            }
+
+            await tx.product.updateMany(
+              {
                 where: {
                   id:
-                    item.signatureProductId,
+                    item.productId,
                 },
 
                 data: {
@@ -1571,32 +1894,14 @@ export const deleteOrder = async (
                       item.quantity,
                   },
                 },
-              });
-
-              continue;
-            }
-
-            /* REGULAR PRODUCT */
-
-            if (!item.productId) {
-              continue;
-            }
-
-            await tx.product.updateMany({
-              where: {
-                id:
-                  item.productId,
-              },
-
-              data: {
-                stock: {
-                  increment:
-                    item.quantity,
-                },
-              },
-            });
+              }
+            );
           }
         }
+
+        /* =================================
+           DELETE ORDER
+        ================================= */
 
         await tx.order.delete({
           where: {
@@ -1604,6 +1909,7 @@ export const deleteOrder = async (
           },
         });
       },
+
       {
         maxWait: 15000,
         timeout: 30000,

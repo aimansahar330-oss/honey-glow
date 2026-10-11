@@ -30,6 +30,7 @@ import AdminProducts from "./admin/AdminProducts";
 import AdminOrders from "./admin/AdminOrders";
 import AdminCustomers from "./admin/AdminCustomers";
 import AdminSignatureProducts from "./admin/AdminSignatureProducts";
+import AdminSettings from "./admin/AdminSettings";
 
 /* =========================
    PUBLIC LAYOUT
@@ -178,6 +179,11 @@ function App() {
             <Route
               path="signature-products"
               element={<AdminSignatureProducts />}
+            />
+
+            <Route
+              path="settings"
+              element={<AdminSettings />}
             />
           </Route>
 

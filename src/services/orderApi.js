@@ -40,43 +40,70 @@ export const placeOrder = async (
     payload.notes || ""
   );
 
+  /* =========================
+     DELIVERY METHOD
+  ========================= */
+
+  formData.append(
+    "shippingMethod",
+    payload.shippingMethod ||
+      "standard"
+  );
+
+  /* =========================
+     PAYMENT
+  ========================= */
+
   formData.append(
     "paymentMethod",
-    payload.paymentMethod
+    payload.paymentMethod ||
+      "COD"
   );
+
+  /* =========================
+     ORDER ITEMS
+  ========================= */
 
   formData.append(
     "items",
     JSON.stringify(
-      payload.items
+      payload.items || []
     )
   );
 
- if (payload.paymentMethod !== "COD") {
-  formData.append(
-    "paymentSenderNumber",
-    payload.paymentSenderNumber
-  );
+  /* =========================
+     WALLET PAYMENT DATA
+  ========================= */
 
-  formData.append(
-    "paymentReference",
-    payload.paymentReference
-  );
-
-  if (payload.paymentProof) {
+  if (
+    payload.paymentMethod !==
+    "COD"
+  ) {
     formData.append(
-      "paymentProof",
-      payload.paymentProof
+      "paymentSenderNumber",
+      payload.paymentSenderNumber ||
+        ""
     );
-  }
-}
 
-  const {
-    data,
-  } = await api.post(
-    "/orders",
-    formData
-  );
+    formData.append(
+      "paymentReference",
+      payload.paymentReference ||
+        ""
+    );
+
+    if (payload.paymentProof) {
+      formData.append(
+        "paymentProof",
+        payload.paymentProof
+      );
+    }
+  }
+
+  const { data } =
+    await api.post(
+      "/orders",
+      formData
+    );
 
   return data;
 };
@@ -85,16 +112,17 @@ export const trackOrder = async (
   trackingNumber,
   phone
 ) => {
-  const { data } = await api.get(
-    `/orders/track/${encodeURIComponent(
-      trackingNumber
-    )}`,
-    {
-      params: {
-        phone,
-      },
-    }
-  );
+  const { data } =
+    await api.get(
+      `/orders/track/${encodeURIComponent(
+        trackingNumber
+      )}`,
+      {
+        params: {
+          phone,
+        },
+      }
+    );
 
   return data.data;
 };
@@ -106,14 +134,13 @@ export const trackOrder = async (
 export const getAdminOrders = async (
   params = {}
 ) => {
-  const {
-    data,
-  } = await api.get(
-    "/orders/admin",
-    {
-      params,
-    }
-  );
+  const { data } =
+    await api.get(
+      "/orders/admin",
+      {
+        params,
+      }
+    );
 
   return Array.isArray(
     data?.data
@@ -122,58 +149,54 @@ export const getAdminOrders = async (
     : [];
 };
 
-export const getAdminOrderById = async (
-  id
-) => {
-  const {
-    data,
-  } = await api.get(
-    `/orders/admin/${id}`
-  );
+export const getAdminOrderById =
+  async (id) => {
+    const { data } =
+      await api.get(
+        `/orders/admin/${id}`
+      );
 
-  return data.data;
-};
+    return data.data;
+  };
 
-export const updateOrderStatus = async ({
-  id,
-  status,
-}) => {
-  const {
-    data,
-  } = await api.patch(
-    `/orders/admin/${id}/status`,
-    {
-      status,
-    }
-  );
+export const updateOrderStatus =
+  async ({
+    id,
+    status,
+  }) => {
+    const { data } =
+      await api.patch(
+        `/orders/admin/${id}/status`,
+        {
+          status,
+        }
+      );
 
-  return data;
-};
+    return data;
+  };
 
-export const updatePaymentStatus = async ({
-  id,
-  paymentStatus,
-}) => {
-  const {
-    data,
-  } = await api.patch(
-    `/orders/admin/${id}/payment`,
-    {
-      paymentStatus,
-    }
-  );
+export const updatePaymentStatus =
+  async ({
+    id,
+    paymentStatus,
+  }) => {
+    const { data } =
+      await api.patch(
+        `/orders/admin/${id}/payment`,
+        {
+          paymentStatus,
+        }
+      );
 
-  return data;
-};
+    return data;
+  };
 
+export const deleteAdminOrder =
+  async (id) => {
+    const { data } =
+      await api.delete(
+        `/orders/admin/${id}`
+      );
 
-export const deleteAdminOrder = async (
-  id
-) => {
-  const { data } =
-    await api.delete(
-      `/orders/admin/${id}`
-    );
-
-  return data;
-};
+    return data;
+  };

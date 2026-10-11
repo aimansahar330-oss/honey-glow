@@ -15,6 +15,7 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import signatureProductRoutes from "./routes/signatureProduct.routes.js";
 import productVideoRoutes from "./routes/productVideo.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 import {
   errorHandler,
   notFound,
@@ -78,6 +79,11 @@ app.use(
 app.use(
   "/api/product-videos",
   productVideoRoutes
+);
+
+app.use(
+  "/api/settings",
+  settingsRoutes
 );
 
 
