@@ -2,12 +2,18 @@ import {
   useEffect,
   useState,
 } from "react";
-import { Link } from "react-router-dom";
+
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
 import {
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
+
 import {
   Check,
   ChevronRight,
@@ -28,7 +34,9 @@ import {
   getSignatureProducts,
 } from "../services/signatureProductApi";
 
-import { useCart } from "../context/CartContext";
+import {
+  useCart,
+} from "../context/CartContext";
 
 /* =====================================================
    YOUTUBE
@@ -40,7 +48,8 @@ function getYouTubeId(url) {
   }
 
   try {
-    const parsed = new URL(url);
+    const parsed =
+      new URL(url);
 
     if (
       parsed.hostname.includes(
@@ -112,35 +121,46 @@ function useTypewriter(text) {
         typedText.length <
         text.length
       ) {
-        timer = setTimeout(() => {
-          setTypedText(
-            text.slice(
-              0,
-              typedText.length + 1
-            )
-          );
-        }, 10);
+        timer =
+          setTimeout(() => {
+            setTypedText(
+              text.slice(
+                0,
+                typedText.length +
+                  1
+              )
+            );
+          }, 10);
       } else {
-        timer = setTimeout(() => {
-          setDeleting(true);
-        }, 1500);
+        timer =
+          setTimeout(() => {
+            setDeleting(
+              true
+            );
+          }, 1500);
       }
     } else {
       if (
-        typedText.length > 0
+        typedText.length >
+        0
       ) {
-        timer = setTimeout(() => {
-          setTypedText(
-            text.slice(
-              0,
-              typedText.length - 1
-            )
-          );
-        }, 5);
+        timer =
+          setTimeout(() => {
+            setTypedText(
+              text.slice(
+                0,
+                typedText.length -
+                  1
+              )
+            );
+          }, 5);
       } else {
-        timer = setTimeout(() => {
-          setDeleting(false);
-        }, 250);
+        timer =
+          setTimeout(() => {
+            setDeleting(
+              false
+            );
+          }, 250);
       }
     }
 
@@ -161,6 +181,13 @@ function useTypewriter(text) {
 ===================================================== */
 
 function SignatureShowcase() {
+  const navigate =
+    useNavigate();
+
+  const {
+    addToCart,
+  } = useCart();
+
   const [
     selectedProduct,
     setSelectedProduct,
@@ -179,13 +206,18 @@ function SignatureShowcase() {
     queryKey: [
       "signature-products",
     ],
+
     queryFn:
       getSignatureProducts,
+
     staleTime:
       5 * 60 * 1000,
+
     refetchOnWindowFocus:
       false,
   });
+
+  /* MAX 4 SIGNATURE PRODUCTS */
 
   const products =
     Array.isArray(data)
@@ -242,6 +274,35 @@ function SignatureShowcase() {
         : products.length === 2
           ? "lg:h-[440px] xl:h-[465px] lg:self-center"
           : "lg:h-[430px] xl:h-[455px] lg:self-center";
+
+  /* =====================================================
+     DIRECT ORDER
+  ===================================================== */
+
+  const handleDirectOrder =
+    (product) => {
+      if (
+        Number(
+          product.stock
+        ) < 1
+      ) {
+        return;
+      }
+
+      addToCart(
+        {
+          ...product,
+
+          productType:
+            "SIGNATURE",
+        },
+        1
+      );
+
+      navigate(
+        "/checkout"
+      );
+    };
 
   return (
     <>
@@ -567,132 +628,155 @@ function SignatureShowcase() {
         }
 
         @keyframes zafraniShine {
-  0% {
-    background-position: 220% center;
-  }
+          0% {
+            background-position:
+              220% center;
+          }
 
-  100% {
-    background-position: -220% center;
-  }
-}
+          100% {
+            background-position:
+              -220% center;
+          }
+        }
 
-@keyframes zafraniGlow {
-  0%, 100% {
-    opacity: .2;
-    transform:
-      translate(-50%, -50%)
-      scale(.88);
-  }
+        @keyframes zafraniGlow {
+          0%, 100% {
+            opacity: .2;
 
-  50% {
-    opacity: .75;
-    transform:
-      translate(-50%, -50%)
-      scale(1.08);
-  }
-}
+            transform:
+              translate(
+                -50%,
+                -50%
+              )
+              scale(.88);
+          }
 
-@keyframes zafraniSparkle {
-  0%, 100% {
-    opacity: .45;
-    transform:
-      rotate(0deg)
-      scale(.85);
-  }
+          50% {
+            opacity: .75;
 
-  50% {
-    opacity: 1;
-    transform:
-      rotate(18deg)
-      scale(1.18);
-  }
-}
+            transform:
+              translate(
+                -50%,
+                -50%
+              )
+              scale(1.08);
+          }
+        }
 
-@keyframes zafraniLine {
-  0%, 100% {
-    transform: scaleX(.45);
-    opacity: .4;
-  }
+        @keyframes zafraniSparkle {
+          0%, 100% {
+            opacity: .45;
 
-  50% {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
+            transform:
+              rotate(0deg)
+              scale(.85);
+          }
 
-@keyframes zafraniDot {
-  0%, 100% {
-    box-shadow:
-      0 0 0 0
-      rgba(185,123,47,0);
-  }
+          50% {
+            opacity: 1;
 
-  50% {
-    box-shadow:
-      0 0 0 5px
-      rgba(185,123,47,.14);
-  }
-}
+            transform:
+              rotate(18deg)
+              scale(1.18);
+          }
+        }
 
-.zafrani-title {
-  background:
-    linear-gradient(
-      100deg,
-      #6e3441 0%,
-      #7e3d48 22%,
-      #c58a37 43%,
-      #e0b25d 52%,
-      #a66729 63%,
-      #773844 80%,
-      #6e3441 100%
-    );
+        @keyframes zafraniLine {
+          0%, 100% {
+            transform:
+              scaleX(.45);
 
-  background-size: 240% auto;
+            opacity: .4;
+          }
 
-  -webkit-background-clip: text;
-  background-clip: text;
+          50% {
+            transform:
+              scaleX(1);
 
-  color: transparent;
+            opacity: 1;
+          }
+        }
 
-  animation:
-    zafraniShine
-    4.2s linear infinite;
+        @keyframes zafraniDot {
+          0%, 100% {
+            box-shadow:
+              0 0 0 0
+              rgba(185,123,47,0);
+          }
 
-  transition:
-    transform .3s ease,
-    filter .3s ease;
-}
+          50% {
+            box-shadow:
+              0 0 0 5px
+              rgba(185,123,47,.14);
+          }
+        }
 
-.zafrani-title:hover {
-  transform: translateY(-1px);
-  filter:
-    saturate(1.3)
-    brightness(.9);
-}
+        .zafrani-title {
+          background:
+            linear-gradient(
+              100deg,
+              #6e3441 0%,
+              #7e3d48 22%,
+              #c58a37 43%,
+              #e0b25d 52%,
+              #a66729 63%,
+              #773844 80%,
+              #6e3441 100%
+            );
 
-.zafrani-glow {
-  animation:
-    zafraniGlow
-    3.8s ease-in-out infinite;
-}
+          background-size:
+            240% auto;
 
-.zafrani-sparkle {
-  animation:
-    zafraniSparkle
-    2.4s ease-in-out infinite;
-}
+          -webkit-background-clip:
+            text;
 
-.zafrani-line {
-  animation:
-    zafraniLine
-    3.6s ease-in-out infinite;
-}
+          background-clip:
+            text;
 
-.zafrani-dot {
-  animation:
-    zafraniDot
-    2.6s ease-in-out infinite;
-}
+          color:
+            transparent;
+
+          animation:
+            zafraniShine
+            4.2s linear infinite;
+
+          transition:
+            transform .3s ease,
+            filter .3s ease;
+        }
+
+        .zafrani-title:hover {
+          transform:
+            translateY(-1px);
+
+          filter:
+            saturate(1.3)
+            brightness(.9);
+        }
+
+        .zafrani-glow {
+          animation:
+            zafraniGlow
+            3.8s ease-in-out infinite;
+        }
+
+        .zafrani-sparkle {
+          animation:
+            zafraniSparkle
+            2.4s ease-in-out infinite;
+        }
+
+        .zafrani-line {
+          animation:
+            zafraniLine
+            3.6s ease-in-out infinite;
+        }
+
+        .zafrani-dot {
+          animation:
+            zafraniDot
+            2.6s ease-in-out infinite;
+        }
       `}</style>
 
       <section className="relative overflow-hidden border-y border-[#f0e1e2] bg-gradient-to-br from-[#fffaf8] via-[#fbf3f2] to-[#f5eaed] px-4 py-10 sm:px-6 sm:py-14 lg:px-9 lg:py-16">
@@ -742,17 +826,11 @@ function SignatureShowcase() {
 
                 <div className="flex max-w-full items-start whitespace-nowrap font-beauty font-semibold tracking-[-0.035em]">
 
-                  {/* STATIC SPECIAL */}
-
                   <span className="signature-special-word block shrink-0 py-1 text-[22px] leading-[1.18] text-[#53383f] sm:text-[31px] lg:text-[34px] xl:text-[38px]">
                     Special
                   </span>
 
-                  {/* TYPEWRITER FIXED WIDTH AREA */}
-
                   <span className="relative ml-2 inline-block overflow-visible py-1 sm:ml-2.5">
-
-                    {/* INVISIBLE TEXT — WIDTH RESERVE */}
 
                     <span
                       aria-hidden="true"
@@ -760,8 +838,6 @@ function SignatureShowcase() {
                     >
                       Signature Collection
                     </span>
-
-                    {/* ANIMATED TEXT */}
 
                     <span className="absolute left-0 top-1 flex items-start overflow-visible">
 
@@ -774,6 +850,7 @@ function SignatureShowcase() {
                   </span>
                 </div>
               </div>
+
               {/* ANIMATED LINE */}
 
               <div className="mx-auto mt-1 h-px w-20 overflow-hidden lg:mx-0">
@@ -793,40 +870,25 @@ function SignatureShowcase() {
 
                 <div className="group relative flex items-center gap-3 overflow-visible">
 
-                  {/* LEFT LINE */}
-
                   <span className="zafrani-line h-px w-8 origin-right bg-gradient-to-r from-transparent via-[#a86f2f] to-[#7a3544] sm:w-10" />
-
-                  {/* TEXT AREA */}
 
                   <div className="relative flex items-center gap-2">
 
-                    {/* SOFT GLOW */}
-
                     <div className="zafrani-glow pointer-events-none absolute left-1/2 top-1/2 h-9 w-[150px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d9a14d]/20 blur-xl" />
-
-                    {/* SPARKLE */}
 
                     <Sparkles
                       size={12}
                       className="zafrani-sparkle relative shrink-0 text-[#b1772f]"
                     />
 
-                    {/* PRODUCT NAME */}
-
                     <span className="zafrani-title relative whitespace-nowrap font-beauty text-[20px] font-semibold tracking-[-0.02em] sm:text-[22px] lg:text-[23px]">
                       Zafrani Cream
                     </span>
 
-                    {/* SMALL GOLD DOT */}
-
                     <span className="zafrani-dot relative h-1.5 w-1.5 shrink-0 rounded-full bg-[#b97b2f]" />
                   </div>
 
-                  {/* RIGHT LINE */}
-
                   <span className="zafrani-line h-px w-8 origin-left bg-gradient-to-l from-transparent via-[#a86f2f] to-[#7a3544] sm:w-10" />
-
                 </div>
               </div>
             </div>
@@ -879,7 +941,7 @@ function SignatureShowcase() {
                     className={
                       products.length ===
                         3 &&
-                        index === 2
+                      index === 2
                         ? "sm:col-span-2 xl:col-span-1"
                         : ""
                     }
@@ -897,6 +959,11 @@ function SignatureShowcase() {
                       }
                       onOpen={() =>
                         setSelectedProduct(
+                          product
+                        )
+                      }
+                      onDirectOrder={() =>
+                        handleDirectOrder(
                           product
                         )
                       }
@@ -946,6 +1013,7 @@ function SignatureShowcase() {
 function SignatureHomeCard({
   product,
   onOpen,
+  onDirectOrder,
   compact,
   index,
 }) {
@@ -966,38 +1034,41 @@ function SignatureHomeCard({
   const originalPrice =
     Number(
       product.originalPrice ||
-      0
+        0
     );
 
   const discountPrice =
     product.discountPrice
       ? Number(
-        product.discountPrice
-      )
+          product.discountPrice
+        )
       : null;
 
   const discountPercent =
     discountPrice &&
-      originalPrice > 0
+    originalPrice > 0
       ? Math.round(
-        ((originalPrice -
-          discountPrice) /
-          originalPrice) *
-        100
-      )
+          ((originalPrice -
+            discountPrice) /
+            originalPrice) *
+            100
+        )
       : 0;
+
+  const outOfStock =
+    stock < 1;
 
   return (
     <article
       role="button"
       tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(
-        event
-      ) => {
+      onClick={
+        onOpen
+      }
+      onKeyDown={(event) => {
         if (
           event.key ===
-          "Enter" ||
+            "Enter" ||
           event.key === " "
         ) {
           onOpen();
@@ -1056,69 +1127,108 @@ function SignatureHomeCard({
               "1.1s",
           }}
         />
-{/* IMAGE */}
 
-<div
-  className={`relative w-full shrink-0 overflow-hidden ${
-    compact
-      ? "h-[185px] sm:h-[195px] lg:h-[230px] xl:h-[245px]"
-      : "h-[220px] sm:h-[235px] lg:h-[260px] xl:h-[275px]"
-  }`}
->
-  {image ? (
-    <img
-      src={image}
-      alt={product.name}
-      className="
-        block
-        h-full
-        w-full
-        object-cover
-        object-center
-      "
-    />
-  ) : (
-    <div className="flex h-full w-full items-center justify-center bg-[#f8eeee]">
-      <Sparkles
-        size={22}
-        className="text-[#b98b94]"
-      />
-    </div>
-  )}
+        {/* IMAGE */}
 
-  {/* SIGNATURE BADGE */}
+        <div
+          className={`relative w-full shrink-0 overflow-hidden ${
+            compact
+              ? "h-[185px] sm:h-[195px] lg:h-[230px] xl:h-[245px]"
+              : "h-[220px] sm:h-[235px] lg:h-[260px] xl:h-[275px]"
+          }`}
+        >
 
-  <span className="signature-badge absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur-md">
-    <Sparkles size={8} />
-    Signature
-  </span>
+          {image ? (
 
-  {/* DISCOUNT */}
+            <img
+              src={
+                image
+              }
+              alt={
+                product.name
+              }
+              className="block h-full w-full object-cover object-center"
+            />
 
-  {discountPercent > 0 && (
-    <span className="absolute right-3 top-3 z-20 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white shadow backdrop-blur-md">
-      {discountPercent}% Off
-    </span>
-  )}
+          ) : (
 
-  {/* IMAGE LABEL */}
+            <div className="flex h-full w-full items-center justify-center bg-[#f8eeee]">
 
-  <div className="absolute bottom-3 left-3 z-20">
-    <div className="rounded-full border border-white/50 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-sm">
-      <p className="text-[5px] font-bold uppercase tracking-[0.16em] text-[#69283a]">
-        KM Cares Signature
-      </p>
-    </div>
-  </div>
-</div>
+              <Sparkles
+                size={22}
+                className="text-[#b98b94]"
+              />
+            </div>
+          )}
+
+          {/* SIGNATURE BADGE */}
+
+          <span className="signature-badge absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white shadow-lg backdrop-blur-md">
+
+            <Sparkles
+              size={8}
+            />
+
+            Signature
+          </span>
+
+          {/* DISCOUNT */}
+
+          {discountPercent >
+            0 && (
+
+            <span className="absolute right-3 top-3 z-20 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white shadow backdrop-blur-md">
+
+              {
+                discountPercent
+              }
+              % Off
+            </span>
+          )}
+
+          {/* IMAGE LABEL */}
+
+          <div className="absolute bottom-3 left-3 z-20 transition duration-300 lg:group-hover:opacity-0">
+
+            <div className="rounded-full border border-white/50 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-sm">
+
+              <p className="text-[5px] font-bold uppercase tracking-[0.16em] text-[#69283a]">
+                KM Cares Signature
+              </p>
+            </div>
+          </div>
+
+          {/* DESKTOP HOVER VIEW DETAILS */}
+
+          <div className="absolute inset-0 z-30 hidden items-end justify-center bg-gradient-to-t from-[#35151f]/75 via-[#35151f]/10 to-transparent p-4 opacity-0 transition duration-300 lg:flex lg:group-hover:opacity-100">
+
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onOpen();
+              }}
+              className="flex w-full translate-y-3 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-4 py-3 text-[7px] font-bold uppercase tracking-[0.14em] text-[#632437] shadow-[0_10px_28px_rgba(30,10,18,0.18)] backdrop-blur-md transition duration-300 group-hover:translate-y-0"
+            >
+              View Details
+
+              <ChevronRight
+                size={10}
+                className="transition duration-300 group-hover:translate-x-1"
+              />
+            </button>
+          </div>
+        </div>
 
         {/* DETAILS */}
 
         <div
-          className={`flex flex-1 flex-col ${compact
-            ? "p-3.5 sm:p-4"
-            : "p-4 sm:p-5"
-            }`}
+          className={`flex flex-1 flex-col ${
+            compact
+              ? "p-3.5 sm:p-4"
+              : "p-4 sm:p-5"
+          }`}
         >
 
           <div className="flex items-center justify-between gap-2">
@@ -1144,13 +1254,15 @@ function SignatureHomeCard({
           {/* NAME */}
 
           <h3
-            className={`signature-product-name font-beauty mt-1.5 line-clamp-2 font-semibold leading-[1.04] tracking-[-0.03em] ${compact
-              ? "text-[21px] sm:text-[23px]"
-              : "text-[24px] sm:text-[27px]"
-              }`}
+            className={`signature-product-name font-beauty mt-1.5 line-clamp-2 font-semibold leading-[1.04] tracking-[-0.03em] ${
+              compact
+                ? "text-[21px] sm:text-[23px]"
+                : "text-[24px] sm:text-[27px]"
+            }`}
           >
-
-            {product.name}
+            {
+              product.name
+            }
           </h3>
 
           {/* RATING */}
@@ -1182,12 +1294,12 @@ function SignatureHomeCard({
             <div className="mt-1 flex flex-wrap items-center gap-2">
 
               <span
-                className={`signature-price font-black text-[#71283a] ${compact
-                  ? "text-[17px] sm:text-[19px]"
-                  : "text-[18px] sm:text-[21px]"
-                  }`}
+                className={`signature-price font-black text-[#71283a] ${
+                  compact
+                    ? "text-[17px] sm:text-[19px]"
+                    : "text-[18px] sm:text-[21px]"
+                }`}
               >
-
                 Rs.{" "}
 
                 {Number(
@@ -1198,7 +1310,6 @@ function SignatureHomeCard({
               {product.discountPrice && (
 
                 <span className="text-[9px] text-[#b39fa3] line-through">
-
                   Rs.{" "}
 
                   {Number(
@@ -1221,10 +1332,11 @@ function SignatureHomeCard({
               )}
 
               <span
-                className={`relative h-1.5 w-1.5 rounded-full ${stock > 0
-                  ? "bg-emerald-500"
-                  : "bg-red-400"
-                  }`}
+                className={`relative h-1.5 w-1.5 rounded-full ${
+                  stock > 0
+                    ? "bg-emerald-500"
+                    : "bg-red-400"
+                }`}
               />
             </span>
 
@@ -1236,20 +1348,65 @@ function SignatureHomeCard({
             </span>
           </div>
 
-          {/* SHOP NOW */}
+          {/* MOBILE BUTTONS */}
 
-          <div className="mt-auto pt-4">
+          <div className="mt-auto grid grid-cols-2 gap-2 pt-4 lg:hidden">
+
+            {/* VIEW DETAILS */}
 
             <button
               type="button"
-              onClick={(
-                event
-              ) => {
+              onClick={(event) => {
                 event.stopPropagation();
 
                 onOpen();
               }}
-              className="group/button relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-[#632437] px-4 py-3 text-[7px] font-bold uppercase tracking-[0.15em] text-white shadow-[0_10px_28px_rgba(84,25,40,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4e1929]"
+              className="flex min-h-[38px] items-center justify-center rounded-full border border-[#8b4a5b] bg-white px-2 text-[6px] font-bold uppercase tracking-[0.08em] text-[#68263a] transition active:scale-[0.98]"
+            >
+              View Details
+            </button>
+
+            {/* ORDER NOW */}
+
+            <button
+              type="button"
+              disabled={
+                outOfStock
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onDirectOrder();
+              }}
+              className="relative flex min-h-[38px] items-center justify-center overflow-hidden rounded-full bg-[#632437] px-2 text-[6px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_8px_22px_rgba(84,25,40,0.20)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+
+              <span className="signature-auto-sweep pointer-events-none absolute top-0 h-full w-[35%] -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+              <span className="relative">
+
+                {outOfStock
+                  ? "Out of Stock"
+                  : "Order Now"}
+              </span>
+            </button>
+          </div>
+
+          {/* DESKTOP ORDER NOW */}
+
+          <div className="mt-auto hidden pt-4 lg:block">
+
+            <button
+              type="button"
+              disabled={
+                outOfStock
+              }
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onDirectOrder();
+              }}
+              className="group/button relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-full bg-[#632437] px-4 py-3 text-[7px] font-bold uppercase tracking-[0.15em] text-white shadow-[0_10px_28px_rgba(84,25,40,0.24)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4e1929] disabled:cursor-not-allowed disabled:opacity-40"
             >
 
               <span className="signature-auto-sweep pointer-events-none absolute top-0 h-full w-[30%] -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
@@ -1260,13 +1417,19 @@ function SignatureHomeCard({
               />
 
               <span className="relative">
-                Shop Now
+
+                {outOfStock
+                  ? "Out of Stock"
+                  : "Order Now"}
               </span>
 
-              <ChevronRight
-                size={10}
-                className="relative transition duration-300 group-hover/button:translate-x-1.5"
-              />
+              {!outOfStock && (
+
+                <ChevronRight
+                  size={10}
+                  className="relative transition duration-300 group-hover/button:translate-x-1.5"
+                />
+              )}
             </button>
           </div>
         </div>
@@ -1386,12 +1549,15 @@ function CardRating({
       "signature-reviews",
       productId,
     ],
+
     queryFn: () =>
       getSignatureProductReviews(
         productId
       ),
+
     staleTime:
       5 * 60 * 1000,
+
     refetchOnWindowFocus:
       false,
   });
@@ -1399,13 +1565,13 @@ function CardRating({
   const rating =
     Number(
       data?.averageRating ||
-      0
+        0
     );
 
   const count =
     Number(
       data?.reviewCount ||
-      0
+        0
     );
 
   return (
@@ -1453,7 +1619,7 @@ function SignatureDetailModal({
   ] = useState(
     product.images?.[0]
       ?.imageUrl ||
-    null
+      null
   );
 
   const [
@@ -1477,14 +1643,16 @@ function SignatureDetailModal({
 
   const {
     data:
-    reviewData,
+      reviewData,
+
     isLoading:
-    reviewsLoading,
+      reviewsLoading,
   } = useQuery({
     queryKey: [
       "signature-reviews",
       product.id,
     ],
+
     queryFn: () =>
       getSignatureProductReviews(
         product.id
@@ -1521,6 +1689,8 @@ function SignatureDetailModal({
     product.discountPrice ??
     product.originalPrice;
 
+  /* ADD TO CART */
+
   const handleAddToCart =
     () => {
       if (
@@ -1534,6 +1704,7 @@ function SignatureDetailModal({
       addToCart(
         {
           ...product,
+
           productType:
             "SIGNATURE",
         },
@@ -1546,6 +1717,8 @@ function SignatureDetailModal({
         setAdded(false);
       }, 1500);
     };
+
+  /* REVIEW */
 
   const submitReview =
     (event) => {
@@ -1571,9 +1744,7 @@ function SignatureDetailModal({
   return (
     <div
       className="fixed inset-0 z-[160] flex items-center justify-center bg-[#4b383e]/45 p-3 backdrop-blur-md"
-      onMouseDown={(
-        event
-      ) => {
+      onMouseDown={(event) => {
         if (
           event.target ===
           event.currentTarget
@@ -1607,7 +1778,6 @@ function SignatureDetailModal({
             }
             className="flex h-8 w-8 items-center justify-center rounded-full border border-[#e2d1d4] bg-white text-[#825860] transition duration-300 hover:rotate-90 hover:bg-[#a9616e] hover:text-white"
           >
-
             <X
               size={13}
             />
@@ -1641,42 +1811,41 @@ function SignatureDetailModal({
             {product.images?.length >
               1 && (
 
-                <div className="mt-2.5 flex justify-center gap-1.5 overflow-x-auto">
+              <div className="mt-2.5 flex justify-center gap-1.5 overflow-x-auto">
 
-                  {product.images.map(
-                    (
-                      image
-                    ) => (
+                {product.images.map(
+                  (image) => (
 
-                      <button
-                        key={
-                          image.id
-                        }
-                        type="button"
-                        onClick={() =>
-                          setActiveImage(
-                            image.imageUrl
-                          )
-                        }
-                        className={`h-10 w-10 shrink-0 overflow-hidden rounded-[9px] border bg-white ${activeImage ===
+                    <button
+                      key={
+                        image.id
+                      }
+                      type="button"
+                      onClick={() =>
+                        setActiveImage(
                           image.imageUrl
+                        )
+                      }
+                      className={`h-10 w-10 shrink-0 overflow-hidden rounded-[9px] border bg-white ${
+                        activeImage ===
+                        image.imageUrl
                           ? "border-[#4e94aa]"
                           : "border-[#d9dfe1]"
-                          }`}
-                      >
+                      }`}
+                    >
 
-                        <img
-                          src={
-                            image.imageUrl
-                          }
-                          alt=""
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    )
-                  )}
-                </div>
-              )}
+                      <img
+                        src={
+                          image.imageUrl
+                        }
+                        alt=""
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+                  )
+                )}
+              </div>
+            )}
           </div>
 
           {/* DETAILS */}
@@ -1717,7 +1886,7 @@ function SignatureDetailModal({
                 {Number(
                   reviewData
                     ?.averageRating ||
-                  0
+                    0
                 ).toFixed(1)}
                 {" "}
                 (
@@ -1761,12 +1930,13 @@ function SignatureDetailModal({
             <div className="mt-3 flex items-center gap-2 text-[7px] text-[#917c80]">
 
               <span
-                className={`h-1.5 w-1.5 rounded-full ${Number(
-                  product.stock
-                ) > 0
-                  ? "bg-emerald-500"
-                  : "bg-red-400"
-                  }`}
+                className={`h-1.5 w-1.5 rounded-full ${
+                  Number(
+                    product.stock
+                  ) > 0
+                    ? "bg-emerald-500"
+                    : "bg-red-400"
+                }`}
               />
 
               {Number(
@@ -1786,19 +1956,16 @@ function SignatureDetailModal({
                   type="button"
                   onClick={() =>
                     setQuantity(
-                      (
-                        current
-                      ) =>
+                      (current) =>
                         Math.max(
                           1,
                           current -
-                          1
+                            1
                         )
                     )
                   }
                   className="flex h-8 w-8 items-center justify-center rounded-full text-[#80575f] transition hover:bg-[#f6e9eb]"
                 >
-
                   <Minus
                     size={12}
                   />
@@ -1815,22 +1982,19 @@ function SignatureDetailModal({
                   type="button"
                   onClick={() =>
                     setQuantity(
-                      (
-                        current
-                      ) =>
+                      (current) =>
                         Math.min(
                           Number(
                             product.stock ||
-                            1
+                              1
                           ),
                           current +
-                          1
+                            1
                         )
                     )
                   }
                   className="flex h-8 w-8 items-center justify-center rounded-full text-[#80575f] transition hover:bg-[#f6e9eb]"
                 >
-
                   <Plus
                     size={12}
                   />
@@ -1902,9 +2066,7 @@ function SignatureDetailModal({
                   value={
                     form.name
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setForm({
                       ...form,
 
@@ -1926,9 +2088,7 @@ function SignatureDetailModal({
                     4,
                     5,
                   ].map(
-                    (
-                      rating
-                    ) => (
+                    (rating) => (
 
                       <button
                         key={
@@ -1947,7 +2107,7 @@ function SignatureDetailModal({
                           size={14}
                           className={
                             rating <=
-                              form.rating
+                            form.rating
                               ? "fill-[#d0a04b] text-[#d0a04b]"
                               : "text-[#ddd1d2]"
                           }
@@ -1971,9 +2131,7 @@ function SignatureDetailModal({
                   value={
                     form.comment
                   }
-                  onChange={(
-                    event
-                  ) =>
+                  onChange={(event) =>
                     setForm({
                       ...form,
 
@@ -2074,9 +2232,7 @@ function SignatureDetailModal({
                 <div className="mt-3 max-h-[200px] space-y-2 overflow-y-auto pr-1">
 
                   {reviews.map(
-                    (
-                      review
-                    ) => (
+                    (review) => (
 
                       <article
                         key={
@@ -2090,6 +2246,7 @@ function SignatureDetailModal({
                           <div>
 
                             <p className="text-[8px] font-bold text-[#604249]">
+
                               {
                                 review.name
                               }
@@ -2112,6 +2269,7 @@ function SignatureDetailModal({
                         </div>
 
                         <p className="mt-2 text-[7px] leading-4 text-[#806b70]">
+
                           {
                             review.comment
                           }
@@ -2146,19 +2304,20 @@ function Stars({
       {Array.from({
         length: 5,
       }).map(
-        (
-          _,
-          index
-        ) => (
+        (_, index) => (
 
           <Star
-            key={index}
-            size={size}
+            key={
+              index
+            }
+            size={
+              size
+            }
             className={
               index <
-                Math.round(
-                  rating
-                )
+              Math.round(
+                rating
+              )
                 ? "fill-[#d0a04b] text-[#d0a04b]"
                 : "text-[#ddd1d2]"
             }
@@ -2188,13 +2347,12 @@ function SignatureSkeleton() {
             {Array.from({
               length: 4,
             }).map(
-              (
-                _,
-                index
-              ) => (
+              (_, index) => (
 
                 <div
-                  key={index}
+                  key={
+                    index
+                  }
                   className="h-[380px] animate-pulse rounded-[28px] bg-white/65"
                 />
               )

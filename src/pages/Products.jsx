@@ -12,6 +12,7 @@ import {
 
 import {
   Link,
+  useNavigate,
   useSearchParams,
 } from "react-router-dom";
 
@@ -48,6 +49,13 @@ function Products() {
     searchParams,
     setSearchParams,
   ] = useSearchParams();
+
+  const navigate =
+    useNavigate();
+
+  const {
+    addToCart,
+  } = useCart();
 
   const categorySlug =
     searchParams.get("category") || "";
@@ -103,8 +111,8 @@ function Products() {
       getProducts(
         categorySlug
           ? {
-              category: categorySlug,
-            }
+            category: categorySlug,
+          }
           : {}
       ),
   });
@@ -215,13 +223,13 @@ function Products() {
           const priceA =
             Number(
               a.discountPrice ??
-                a.originalPrice
+              a.originalPrice
             );
 
           const priceB =
             Number(
               b.discountPrice ??
-                b.originalPrice
+              b.originalPrice
             );
 
           if (
@@ -246,11 +254,11 @@ function Products() {
             return (
               Number(
                 b.discountPercent ||
-                  0
+                0
               ) -
               Number(
                 a.discountPercent ||
-                  0
+                0
               )
             );
           }
@@ -261,11 +269,11 @@ function Products() {
             return (
               Number(
                 b.averageRating ||
-                  0
+                0
               ) -
               Number(
                 a.averageRating ||
-                  0
+                0
               )
             );
           }
@@ -298,7 +306,9 @@ function Products() {
       setActiveCard(null);
 
       setSearch("");
+
       setDiscountOnly(false);
+
       setSort("newest");
 
       if (!slug) {
@@ -309,6 +319,28 @@ function Products() {
       setSearchParams({
         category: slug,
       });
+    };
+
+  /* =========================
+     DIRECT ORDER
+  ========================= */
+
+  const handleDirectOrder =
+    (product) => {
+      if (
+        Number(product.stock) < 1
+      ) {
+        return;
+      }
+
+      addToCart(
+        product,
+        1
+      );
+
+      navigate(
+        "/checkout"
+      );
     };
 
   return (
@@ -384,11 +416,10 @@ function Products() {
         ========================= */}
 
         <section
-          className={`relative px-5 sm:px-8 lg:px-12 xl:px-16 ${
-            categorySlug
+          className={`relative px-5 sm:px-8 lg:px-12 xl:px-16 ${categorySlug
               ? "pb-9 pt-6"
               : "py-9"
-          }`}
+            }`}
         >
 
           <div className="mx-auto max-w-[1450px]">
@@ -397,108 +428,157 @@ function Products() {
                 CATEGORY VIEW HEADER
             ========================= */}
 
-            {selectedCategory && (
+           {selectedCategory && (
+  <section className="mb-7 overflow-hidden rounded-[26px] border border-[#e6cecb] bg-gradient-to-br from-[#fff8f6] via-[#fdf0ed] to-[#f8e3df] shadow-[0_12px_38px_rgba(83,48,56,0.06)]">
 
-              <section className="mb-7 overflow-hidden rounded-[26px] border border-[#e6cecb] bg-gradient-to-br from-[#fff8f6] via-[#fdf0ed] to-[#f8e3df] shadow-[0_12px_38px_rgba(83,48,56,0.06)]">
+    <div className="relative p-4 sm:p-5 lg:p-6">
 
-                <div className="relative px-5 py-7 sm:px-7 sm:py-8 lg:px-9 lg:py-9">
+      {/* DECORATION */}
 
-                  {/* DECORATION */}
+      <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#e9c7cb]/35 blur-3xl" />
 
-                  <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#e9c7cb]/35 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-[#e8c983]/15 blur-3xl" />
 
-                  <div className="pointer-events-none absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-[#e8c983]/15 blur-3xl" />
+      {/* =========================================
+          CATEGORY HEADER CONTENT
+      ========================================= */}
 
-                  <div className="relative">
+      <div className="relative grid gap-5 md:grid-cols-[260px_minmax(0,1fr)] lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-8">
 
-                    {/* TOP ROW */}
+        {/* =========================================
+            LEFT CATEGORY IMAGE
+        ========================================= */}
 
-                    <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="relative overflow-hidden rounded-[22px] border border-[#e1c8c5] bg-[#f4e7e4] shadow-[0_12px_35px_rgba(84,46,55,0.10)]">
 
-                      {/* CATEGORY INFO */}
+          <div className="aspect-[16/10] w-full md:h-full md:min-h-[220px] md:aspect-auto">
 
-                      <div className="max-w-[900px]">
+            {selectedCategory.imageUrl ? (
+              <img
+                src={selectedCategory.imageUrl}
+                alt={selectedCategory.name}
+                className="h-full w-full object-cover transition duration-700 hover:scale-[1.035]"
+              />
+            ) : (
+              <div className="flex h-full min-h-[190px] w-full items-center justify-center bg-gradient-to-br from-[#f2d9d7] via-[#faeeeb] to-[#ead6ac] md:min-h-[220px]">
 
-                        <div className="mb-3 flex items-center gap-2">
-
-                          <Sparkles
-                            size={12}
-                            className="text-[#974653]"
-                          />
-
-                          <span className="text-[7px] font-bold uppercase tracking-[0.22em] text-[#a16d76]">
-                            KM Care Collection
-                          </span>
-                        </div>
-
-                        {/* CATEGORY NAME */}
-
-                        <h1 className="font-beauty text-[34px] font-semibold leading-[0.95] tracking-[-0.035em] text-[#482b32] sm:text-[42px] lg:text-[48px]">
-                          {
-                            selectedCategory.name
-                          }
-                        </h1>
-
-                        <div className="mt-3 h-px w-20 bg-gradient-to-r from-[#a45a68] to-transparent" />
-
-                        {/* FULL DESCRIPTION */}
-
-                        <p className="mt-4 max-w-[900px] whitespace-pre-line text-[10px] leading-6 text-[#7d656a] sm:text-[11px] sm:leading-7">
-                          {selectedCategory.description ||
-                            "Explore our carefully selected products from this collection."}
-                        </p>
-                      </div>
-
-                      {/* BACK HOME */}
-
-                      <Link
-                        to="/"
-                        className="group inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#d8b8bc] bg-white/60 px-4 py-2.5 text-[7px] font-bold uppercase tracking-[0.14em] text-[#7c3b49] backdrop-blur-sm transition duration-300 hover:border-[#8b4050] hover:bg-[#793747] hover:text-white"
-                      >
-                        <ArrowLeft
-                          size={11}
-                        />
-
-                        Back Home
-                      </Link>
-                    </div>
-
-                    {/* BOTTOM META */}
-
-                    <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-[#e5ccca] pt-4">
-
-                      <span className="rounded-full border border-[#dec5c3] bg-white/65 px-3.5 py-2 text-[7px] font-bold uppercase tracking-[0.12em] text-[#7d4550]">
-
-                        {
-                          filteredProducts.length
-                        }{" "}
-
-                        {filteredProducts.length ===
-                        1
-                          ? "Product"
-                          : "Products"}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          selectCategory("")
-                        }
-                        className="group inline-flex items-center gap-2 rounded-full px-2 py-2 text-[7px] font-bold uppercase tracking-[0.14em] text-[#8d4855] transition hover:text-[#612b38]"
-                      >
-                        View All Products
-
-                        <ArrowRight
-                          size={10}
-                          className="transition group-hover:translate-x-1"
-                        />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </section>
+                <Sparkles
+                  size={24}
+                  className="text-[#9e5967]"
+                />
+              </div>
             )}
+          </div>
 
+          {/* SMALL CATEGORY BADGE */}
+
+          <div className="absolute left-3 top-3">
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/40 bg-[#5f2635]/80 px-3 py-1.5 text-[6px] font-bold uppercase tracking-[0.14em] text-white shadow-md backdrop-blur-md">
+
+              <Sparkles size={8} />
+
+              KM Care
+            </span>
+          </div>
+        </div>
+
+        {/* =========================================
+            RIGHT CATEGORY CONTENT
+        ========================================= */}
+
+        <div className="flex min-w-0 flex-col justify-center">
+
+          {/* TOP ROW */}
+
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+            <div className="min-w-0">
+
+              <div className="mb-3 flex items-center gap-2">
+
+                <Sparkles
+                  size={12}
+                  className="text-[#974653]"
+                />
+
+                <span className="text-[7px] font-bold uppercase tracking-[0.22em] text-[#a16d76]">
+                  KM Care Collection
+                </span>
+              </div>
+
+              {/* CATEGORY NAME */}
+
+              <h1 className="font-beauty text-[34px] font-semibold leading-[0.95] tracking-[-0.035em] text-[#482b32] sm:text-[40px] lg:text-[48px]">
+
+                {selectedCategory.name}
+              </h1>
+
+              {/* ACCENT LINE */}
+
+              <div className="mt-3 h-px w-20 bg-gradient-to-r from-[#a45a68] to-transparent" />
+
+              {/* ACTUAL CATEGORY DESCRIPTION */}
+
+              {selectedCategory.shortDescription && (
+                <p className="mt-4 max-w-[820px] whitespace-pre-line text-[10px] leading-6 text-[#7d656a] sm:text-[11px] sm:leading-7">
+
+                  {selectedCategory.shortDescription}
+                </p>
+              )}
+            </div>
+
+            {/* BACK HOME */}
+
+            <Link
+              to="/"
+              className="group inline-flex w-fit shrink-0 items-center gap-2 rounded-full border border-[#d8b8bc] bg-white/65 px-4 py-2.5 text-[7px] font-bold uppercase tracking-[0.14em] text-[#7c3b49] backdrop-blur-sm transition duration-300 hover:border-[#8b4050] hover:bg-[#793747] hover:text-white"
+            >
+              <ArrowLeft size={11} />
+
+              Back Home
+            </Link>
+          </div>
+
+          {/* =========================================
+              BOTTOM META
+          ========================================= */}
+
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-[#e5ccca] pt-4">
+
+            {/* PRODUCT COUNT */}
+
+            <span className="rounded-full border border-[#dec5c3] bg-white/65 px-3.5 py-2 text-[7px] font-bold uppercase tracking-[0.12em] text-[#7d4550]">
+
+              {filteredProducts.length}{" "}
+
+              {filteredProducts.length === 1
+                ? "Product"
+                : "Products"}
+            </span>
+
+            {/* VIEW ALL */}
+
+            <button
+              type="button"
+              onClick={() =>
+                selectCategory("")
+              }
+              className="group inline-flex items-center gap-2 rounded-full px-2 py-2 text-[7px] font-bold uppercase tracking-[0.14em] text-[#8d4855] transition hover:text-[#612b38]"
+            >
+              View All Products
+
+              <ArrowRight
+                size={10}
+                className="transition duration-300 group-hover:translate-x-1"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+)}
             {/* =========================
                 CATEGORY PILLS
             ========================= */}
@@ -675,7 +755,7 @@ function Products() {
                   }{" "}
 
                   {filteredProducts.length ===
-                  1
+                    1
                     ? "product"
                     : "products"}
                 </p>
@@ -762,6 +842,11 @@ function Products() {
                           product
                         )
                       }
+                      onDirectOrder={() =>
+                        handleDirectOrder(
+                          product
+                        )
+                      }
                     />
                   )
                 )}
@@ -805,11 +890,10 @@ function CategoryPill({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-[7px] font-bold uppercase tracking-[0.13em] transition ${
-        active
+      className={`rounded-full border px-4 py-2 text-[7px] font-bold uppercase tracking-[0.13em] transition ${active
           ? "border-[#793747] bg-[#793747] text-white shadow-[0_6px_18px_rgba(121,55,71,0.16)]"
           : "border-[#e2cbc8] bg-[#fff8f6] text-[#825b63] hover:border-[#a96571] hover:text-[#793747]"
-      }`}
+        }`}
     >
       {label}
     </button>
@@ -828,11 +912,10 @@ function DiscountToggle({
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-9 items-center justify-center rounded-xl border px-3 text-[7px] font-bold uppercase tracking-[0.12em] transition ${
-        active
+      className={`flex h-9 items-center justify-center rounded-xl border px-3 text-[7px] font-bold uppercase tracking-[0.12em] transition ${active
           ? "border-[#8b4150] bg-[#8b4150] text-white"
           : "border-[#e4cfcc] bg-white text-[#76545b]"
-      }`}
+        }`}
     >
       On Sale
     </button>
@@ -897,6 +980,7 @@ function ProductCard({
   active,
   onActivate,
   onShop,
+  onDirectOrder,
 }) {
   const mainImage =
     product.images?.[0]
@@ -905,6 +989,9 @@ function ProductCard({
   const finalPrice =
     product.discountPrice ??
     product.originalPrice;
+
+  const outOfStock =
+    Number(product.stock) < 1;
 
   return (
     <article
@@ -943,38 +1030,29 @@ function ProductCard({
             product.discountPercent
           ) > 0 && (
 
-            <span className="absolute left-2 top-2 rounded-full border border-white/30 bg-[#833848] px-2 py-1 text-[6px] font-bold tracking-[0.08em] text-white shadow-md">
+              <span className="absolute left-2 top-2 rounded-full border border-white/30 bg-[#833848] px-2 py-1 text-[6px] font-bold tracking-[0.08em] text-white shadow-md">
 
-              {
-                product.discountPercent
-              }
-              % OFF
-            </span>
-          )}
+                {
+                  product.discountPercent
+                }
+                % OFF
+              </span>
+            )}
 
-          {/* HOVER */}
+          {/* DESKTOP VIEW DETAILS */}
 
-          <div
-            className={`absolute inset-0 flex items-end justify-center bg-gradient-to-t from-[#392127]/65 via-transparent to-transparent p-2.5 transition duration-300 lg:opacity-0 lg:group-hover:opacity-100 ${
-              active
-                ? "opacity-100"
-                : "opacity-0"
-            }`}
-          >
+          <div className="absolute inset-0 hidden items-end justify-center bg-gradient-to-t from-[#392127]/65 via-transparent to-transparent p-2.5 opacity-0 transition duration-300 lg:flex lg:group-hover:opacity-100">
 
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+
                 onShop();
               }}
-              className={`flex w-full translate-y-3 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-3 py-2 text-[7px] font-bold uppercase tracking-[0.13em] text-[#67313d] shadow-lg transition duration-300 lg:group-hover:translate-y-0 ${
-                active
-                  ? "translate-y-0"
-                  : ""
-              }`}
+              className="flex w-full translate-y-3 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-3 py-2 text-[7px] font-bold uppercase tracking-[0.13em] text-[#67313d] shadow-lg transition duration-300 group-hover:translate-y-0"
             >
-              Shop Now
+              View Details
 
               <ArrowRight
                 size={11}
@@ -1013,8 +1091,10 @@ function ProductCard({
             />
 
             <span className="text-[6px] text-[#a18b90]">
+
               {product.averageRating ||
                 "0.0"}{" "}
+
               (
               {product.reviewCount ||
                 0}
@@ -1045,6 +1125,59 @@ function ProductCard({
               </span>
             )}
           </div>
+
+          {/* MOBILE BUTTONS */}
+
+          <div className="mt-2.5 grid grid-cols-2 gap-1.5 lg:hidden">
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+
+                onShop();
+              }}
+              className="flex min-h-[34px] items-center justify-center gap-1 rounded-full border border-[#a76470] bg-white/80 px-2 text-[6px] font-bold uppercase tracking-[0.08em] text-[#773946] transition active:scale-[0.98]"
+            >
+              View Details
+            </button>
+
+            <button
+              type="button"
+              disabled={outOfStock}
+              onClick={(e) => {
+                e.stopPropagation();
+
+                onDirectOrder();
+              }}
+              className="flex min-h-[34px] items-center justify-center gap-1 rounded-full bg-[#793747] px-2 text-[6px] font-bold uppercase tracking-[0.08em] text-white shadow-[0_6px_16px_rgba(121,55,71,0.16)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {outOfStock
+                ? "Out of Stock"
+                : "Order Now"}
+            </button>
+          </div>
+
+          {/* DESKTOP ORDER NOW */}
+
+          <button
+            type="button"
+            disabled={outOfStock}
+            onClick={(e) => {
+              e.stopPropagation();
+
+              onDirectOrder();
+            }}
+            className="mt-2.5 hidden w-full items-center justify-center gap-1.5 rounded-full bg-[#793747] px-3 py-2 text-[7px] font-bold uppercase tracking-[0.12em] text-white shadow-[0_7px_18px_rgba(121,55,71,0.16)] transition duration-300 hover:bg-[#622c39] disabled:cursor-not-allowed disabled:opacity-50 lg:flex"
+          >
+            <ShoppingBag
+              size={10}
+            />
+
+            {outOfStock
+              ? "Out of Stock"
+              : "Order Now"}
+          </button>
 
           <div className="mt-2.5 h-px w-full bg-gradient-to-r from-transparent via-[#d5a0a8] to-transparent" />
         </div>
@@ -1129,9 +1262,9 @@ function ProductQuickView({
               (
                 previous
               ) => [
-                response.data,
-                ...previous,
-              ]
+                  response.data,
+                  ...previous,
+                ]
             );
           }
 
@@ -1202,25 +1335,25 @@ function ProductQuickView({
 
   const averageRating =
     localReviews.length >
-    0
+      0
       ? (
-          localReviews.reduce(
-            (
-              total,
-              review
-            ) =>
-              total +
-              Number(
-                review.rating
-              ),
-            0
-          ) /
-          localReviews.length
-        ).toFixed(1)
+        localReviews.reduce(
+          (
+            total,
+            review
+          ) =>
+            total +
+            Number(
+              review.rating
+            ),
+          0
+        ) /
+        localReviews.length
+      ).toFixed(1)
       : Number(
-          product.averageRating ||
-            0
-        ).toFixed(1);
+        product.averageRating ||
+        0
+      ).toFixed(1);
 
   return (
     <div
@@ -1278,46 +1411,46 @@ function ProductQuickView({
 
               {images.length >
                 1 && (
-                <>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setImageIndex(
-                        imageIndex ===
-                          0
-                          ? images.length -
-                              1
-                          : imageIndex -
-                              1
-                      )
-                    }
-                    className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow"
-                  >
-                    <ChevronLeft
-                      size={14}
-                    />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setImageIndex(
-                        imageIndex ===
-                          images.length -
+                  <>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImageIndex(
+                          imageIndex ===
+                            0
+                            ? images.length -
                             1
-                          ? 0
-                          : imageIndex +
-                              1
-                      )
-                    }
-                    className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow"
-                  >
-                    <ChevronRight
-                      size={14}
-                    />
-                  </button>
-                </>
-              )}
+                            : imageIndex -
+                            1
+                        )
+                      }
+                      className="absolute left-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow"
+                    >
+                      <ChevronLeft
+                        size={14}
+                      />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setImageIndex(
+                          imageIndex ===
+                            images.length -
+                            1
+                            ? 0
+                            : imageIndex +
+                            1
+                        )
+                      }
+                      className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 shadow"
+                    >
+                      <ChevronRight
+                        size={14}
+                      />
+                    </button>
+                  </>
+                )}
             </div>
 
             {/* THUMBNAILS */}
@@ -1325,44 +1458,43 @@ function ProductQuickView({
             {images.length >
               1 && (
 
-              <div className="mt-3 flex gap-2 overflow-x-auto">
+                <div className="mt-3 flex gap-2 overflow-x-auto">
 
-                {images.map(
-                  (
-                    image,
-                    index
-                  ) => (
+                  {images.map(
+                    (
+                      image,
+                      index
+                    ) => (
 
-                    <button
-                      type="button"
-                      key={
-                        image.id
-                      }
-                      onClick={() =>
-                        setImageIndex(
-                          index
-                        )
-                      }
-                      className={`h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 ${
-                        imageIndex ===
-                        index
-                          ? "border-[#873d4c]"
-                          : "border-transparent"
-                      }`}
-                    >
-
-                      <img
-                        src={
-                          image.imageUrl
+                      <button
+                        type="button"
+                        key={
+                          image.id
                         }
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  )
-                )}
-              </div>
-            )}
+                        onClick={() =>
+                          setImageIndex(
+                            index
+                          )
+                        }
+                        className={`h-11 w-11 shrink-0 overflow-hidden rounded-lg border-2 ${imageIndex ===
+                            index
+                            ? "border-[#873d4c]"
+                            : "border-transparent"
+                          }`}
+                      >
+
+                        <img
+                          src={
+                            image.imageUrl
+                          }
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
           </div>
 
           {/* DETAILS */}
@@ -1394,13 +1526,17 @@ function ProductQuickView({
               />
 
               <span className="text-[7px] text-[#967f84]">
+
                 {
                   averageRating
                 }{" "}
+
                 ·{" "}
+
                 {
                   localReviews.length
                 }{" "}
+
                 reviews
               </span>
             </div>
@@ -1428,6 +1564,7 @@ function ProductQuickView({
                   </span>
 
                   <span className="rounded-full bg-[#f1dedd] px-2.5 py-1 text-[6px] font-bold text-[#8c3e4c]">
+
                     {
                       product.discountPercent
                     }
@@ -1440,6 +1577,7 @@ function ProductQuickView({
             {/* DESCRIPTION */}
 
             <p className="mt-4 max-w-[470px] text-[9px] leading-5 text-[#796267] sm:text-[10px]">
+
               {product.shortDescription ||
                 "A carefully selected KM care beauty essential."}
             </p>
@@ -1449,12 +1587,11 @@ function ProductQuickView({
             <div className="mt-4 flex items-center gap-2 text-[7px] font-semibold text-[#6f565b]">
 
               <span
-                className={`h-1.5 w-1.5 rounded-full ${
-                  product.stock >
-                  0
+                className={`h-1.5 w-1.5 rounded-full ${product.stock >
+                    0
                     ? "bg-emerald-500"
                     : "bg-red-500"
-                }`}
+                  }`}
               />
 
               {product.stock > 0
@@ -1506,9 +1643,11 @@ function ProductQuickView({
                 </h3>
 
                 <span className="text-[7px] text-[#9b8388]">
+
                   {
                     localReviews.length
                   }{" "}
+
                   reviews
                 </span>
               </div>
@@ -1518,7 +1657,7 @@ function ProductQuickView({
               <div className="mt-3 max-h-[145px] space-y-2.5 overflow-y-auto pr-1">
 
                 {localReviews.length ===
-                0 ? (
+                  0 ? (
 
                   <p className="text-[8px] text-[#9e858a]">
                     No reviews yet.
@@ -1608,7 +1747,7 @@ function ProductQuickView({
                             size={14}
                             className={
                               value <=
-                              rating
+                                rating
                                 ? "fill-[#d5a34f] text-[#d5a34f]"
                                 : "text-[#d9c6c3]"
                             }
@@ -1659,6 +1798,7 @@ function ProductQuickView({
                 {reviewMutation.isError && (
 
                   <p className="mt-2 text-[7px] text-red-500">
+
                     {reviewMutation.error
                       ?.response
                       ?.data
@@ -1719,9 +1859,9 @@ function Stars({
             size={size}
             className={
               index <
-              Math.round(
-                rating
-              )
+                Math.round(
+                  rating
+                )
                 ? "fill-[#d5a34f] text-[#d5a34f]"
                 : "text-[#d7c5c2]"
             }

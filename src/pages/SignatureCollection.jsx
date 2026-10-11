@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import {
   useMutation,
   useQuery,
@@ -31,6 +33,10 @@ import { useCart } from "../context/CartContext";
 ===================================================== */
 
 function SignatureCollection() {
+  const navigate = useNavigate();
+
+  const { addToCart } = useCart();
+
   const [
     selectedProduct,
     setSelectedProduct,
@@ -52,6 +58,31 @@ function SignatureCollection() {
       ? data
       : [];
 
+  /* =====================================================
+     DIRECT ORDER
+  ===================================================== */
+
+  const handleDirectOrder = (
+    product
+  ) => {
+    if (
+      Number(product.stock) < 1
+    ) {
+      return;
+    }
+
+    addToCart(
+      {
+        ...product,
+        productType:
+          "SIGNATURE",
+      },
+      1
+    );
+
+    navigate("/checkout");
+  };
+
   if (isLoading) {
     return (
       <SignatureCollectionSkeleton />
@@ -67,7 +98,8 @@ function SignatureCollection() {
           </h2>
 
           <p className="mt-2 text-[9px] text-[#987f85]">
-            Unable to load signature products.
+            Unable to load signature
+            products.
           </p>
         </div>
       </main>
@@ -147,22 +179,28 @@ function SignatureCollection() {
         @keyframes signatureCollectionTwinkle {
           0%, 100% {
             opacity: .2;
-            transform: scale(.7) rotate(0deg);
+            transform:
+              scale(.7)
+              rotate(0deg);
           }
 
           50% {
             opacity: 1;
-            transform: scale(1.15) rotate(18deg);
+            transform:
+              scale(1.15)
+              rotate(18deg);
           }
         }
 
         @keyframes signatureCollectionName {
           0% {
-            background-position: 220% center;
+            background-position:
+              220% center;
           }
 
           100% {
-            background-position: -220% center;
+            background-position:
+              -220% center;
           }
         }
 
@@ -213,18 +251,27 @@ function SignatureCollection() {
               #4e3038 100%
             );
 
-          background-size: 250% auto;
+          background-size:
+            250% auto;
 
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+          -webkit-background-clip:
+            text;
+
+          background-clip:
+            text;
+
+          color:
+            transparent;
 
           animation:
             signatureCollectionName
             6s linear infinite;
         }
 
-        @media (prefers-reduced-motion: reduce) {
+        @media (
+          prefers-reduced-motion:
+          reduce
+        ) {
           .signature-collection-border,
           .signature-collection-card,
           .signature-collection-image,
@@ -232,7 +279,8 @@ function SignatureCollection() {
           .signature-collection-glow,
           .signature-collection-twinkle,
           .signature-collection-name {
-            animation: none !important;
+            animation:
+              none !important;
           }
         }
       `}</style>
@@ -244,11 +292,9 @@ function SignatureCollection() {
         ================================================= */}
 
         <section className="border-b border-[#eddddf] bg-[#fffaf8] px-4 py-7 sm:px-6 sm:py-9 lg:px-9">
-
           <div className="mx-auto max-w-[1400px] text-center">
 
             <div className="flex items-center justify-center gap-2">
-
               <Crown
                 size={11}
                 className="text-[#84384b]"
@@ -260,7 +306,6 @@ function SignatureCollection() {
             </div>
 
             <h1 className="font-beauty mt-2 text-[31px] font-semibold tracking-[-0.04em] text-[#53383f] sm:text-[39px] lg:text-[45px]">
-
               Signature
 
               <span className="ml-2 text-[#8e3549]">
@@ -285,7 +330,6 @@ function SignatureCollection() {
           <div className="relative mx-auto max-w-[1400px]">
 
             {products.length === 0 ? (
-
               <div className="rounded-[26px] border border-dashed border-[#dfced1] bg-white px-6 py-16 text-center">
 
                 <Crown
@@ -297,9 +341,7 @@ function SignatureCollection() {
                   Collection coming soon.
                 </h2>
               </div>
-
             ) : (
-
               <div className="grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
                 {products.map(
@@ -307,13 +349,23 @@ function SignatureCollection() {
                     product,
                     index
                   ) => (
-
                     <SignatureProductCard
-                      key={product.id}
-                      product={product}
-                      index={index}
+                      key={
+                        product.id
+                      }
+                      product={
+                        product
+                      }
+                      index={
+                        index
+                      }
                       onOpen={() =>
                         setSelectedProduct(
+                          product
+                        )
+                      }
+                      onDirectOrder={() =>
+                        handleDirectOrder(
                           product
                         )
                       }
@@ -331,9 +383,10 @@ function SignatureCollection() {
       ================================================= */}
 
       {selectedProduct && (
-
         <SignatureDetailModal
-          product={selectedProduct}
+          product={
+            selectedProduct
+          }
           onClose={() =>
             setSelectedProduct(
               null
@@ -353,11 +406,11 @@ function SignatureProductCard({
   product,
   index,
   onOpen,
+  onDirectOrder,
 }) {
   const image =
     product.images?.[0]
-      ?.imageUrl ||
-    null;
+      ?.imageUrl || null;
 
   const finalPrice =
     product.discountPrice ??
@@ -370,7 +423,8 @@ function SignatureProductCard({
 
   const originalPrice =
     Number(
-      product.originalPrice || 0
+      product.originalPrice ||
+        0
     );
 
   const discountPrice =
@@ -391,6 +445,9 @@ function SignatureProductCard({
         )
       : 0;
 
+  const outOfStock =
+    stock < 1;
+
   return (
     <article
       role="button"
@@ -398,7 +455,8 @@ function SignatureProductCard({
       onClick={onOpen}
       onKeyDown={(event) => {
         if (
-          event.key === "Enter" ||
+          event.key ===
+            "Enter" ||
           event.key === " "
         ) {
           onOpen();
@@ -447,7 +505,6 @@ function SignatureProductCard({
         <div className="relative h-[165px] shrink-0 overflow-hidden bg-gradient-to-br from-[#f3e7e7] via-[#fff8f4] to-[#e8e1e9] sm:h-[180px]">
 
           {image ? (
-
             <img
               src={image}
               alt={product.name}
@@ -457,9 +514,7 @@ function SignatureProductCard({
                   `${index * 0.7}s`,
               }}
             />
-
           ) : (
-
             <div className="h-full w-full bg-gradient-to-br from-[#e9cfd4] via-[#fff8f4] to-[#d9e5e8]" />
           )}
 
@@ -467,8 +522,7 @@ function SignatureProductCard({
 
           {/* BADGE */}
 
-          <span className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md">
-
+          <span className="absolute left-3 top-3 z-20 flex items-center gap-1.5 rounded-full border border-white/30 bg-[#541a2b]/85 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.14em] text-white backdrop-blur-md">
             <Sparkles
               size={8}
             />
@@ -479,12 +533,34 @@ function SignatureProductCard({
           {/* DISCOUNT */}
 
           {discountPercent > 0 && (
-
-            <span className="absolute right-3 top-3 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white backdrop-blur-md">
-
+            <span className="absolute right-3 top-3 z-20 rounded-full border border-[#eccb91]/45 bg-[#7b273c]/90 px-2.5 py-1.5 text-[5px] font-bold uppercase tracking-[0.1em] text-white backdrop-blur-md">
               {discountPercent}% Off
             </span>
           )}
+
+          {/* =========================================
+              DESKTOP HOVER VIEW DETAILS
+          ========================================= */}
+
+          <div className="absolute inset-0 z-30 hidden items-end justify-center bg-gradient-to-t from-[#35151f]/75 via-[#35151f]/10 to-transparent p-3 opacity-0 transition duration-300 lg:flex lg:group-hover:opacity-100">
+
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onOpen();
+              }}
+              className="flex w-full translate-y-3 items-center justify-center gap-2 rounded-full border border-white/60 bg-white/95 px-3 py-2.5 text-[6px] font-bold uppercase tracking-[0.13em] text-[#632437] shadow-[0_8px_24px_rgba(30,10,18,0.18)] backdrop-blur-md transition duration-300 group-hover:translate-y-0"
+            >
+              View Details
+
+              <ChevronRight
+                size={9}
+                className="transition duration-300 group-hover:translate-x-1"
+              />
+            </button>
+          </div>
         </div>
 
         {/* DETAILS */}
@@ -496,7 +572,6 @@ function SignatureProductCard({
           <div className="flex items-center justify-between">
 
             <p className="text-[5px] font-bold uppercase tracking-[0.16em] text-[#94767c]">
-
               KM-
               {String(
                 product.id
@@ -515,14 +590,12 @@ function SignatureProductCard({
           {/* FIXED TITLE HEIGHT */}
 
           <h2 className="signature-collection-name mt-1 line-clamp-2 h-[42px] overflow-hidden font-beauty text-[21px] font-semibold leading-[1.02] tracking-[-0.03em] sm:text-[23px]">
-
             {product.name}
           </h2>
 
           {/* STARS ONLY */}
 
           <div className="mt-1.5 h-[12px]">
-
             <CardRating
               productId={
                 product.id
@@ -535,22 +608,16 @@ function SignatureProductCard({
           <div className="mt-2 flex items-end justify-between gap-2">
 
             <div>
-
               <span className="text-[17px] font-black text-[#71283a] sm:text-[18px]">
-
                 Rs.{" "}
-
                 {Number(
                   finalPrice
                 ).toLocaleString()}
               </span>
 
               {product.discountPrice && (
-
                 <span className="ml-1.5 text-[7px] text-[#b39fa3] line-through">
-
                   Rs.{" "}
-
                   {Number(
                     product.originalPrice
                   ).toLocaleString()}
@@ -569,7 +636,6 @@ function SignatureProductCard({
               />
 
               <span className="text-[5px] font-bold uppercase tracking-[0.08em] text-[#8d797e]">
-
                 {stock > 0
                   ? "In Stock"
                   : "Sold Out"}
@@ -577,17 +643,65 @@ function SignatureProductCard({
             </div>
           </div>
 
-          {/* BUTTON ALWAYS SAME POSITION */}
+          {/* =========================================
+              MOBILE BUTTONS
+              ALWAYS VISIBLE
+          ========================================= */}
 
-          <div className="mt-auto pt-2.5">
+          <div className="mt-auto grid grid-cols-2 gap-1.5 pt-2.5 lg:hidden">
+
+            {/* VIEW DETAILS */}
 
             <button
               type="button"
               onClick={(event) => {
                 event.stopPropagation();
+
                 onOpen();
               }}
-              className="group/button relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#632437] px-4 py-2.5 text-[6px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_24px_rgba(84,25,40,0.20)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4e1929]"
+              className="flex min-h-[36px] items-center justify-center rounded-full border border-[#8b4a5b] bg-white px-2 text-[5.5px] font-bold uppercase tracking-[0.07em] text-[#68263a] transition active:scale-[0.98]"
+            >
+              View Details
+            </button>
+
+            {/* ORDER NOW */}
+
+            <button
+              type="button"
+              disabled={outOfStock}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onDirectOrder();
+              }}
+              className="relative flex min-h-[36px] items-center justify-center overflow-hidden rounded-full bg-[#632437] px-2 text-[5.5px] font-bold uppercase tracking-[0.07em] text-white shadow-[0_7px_20px_rgba(84,25,40,0.20)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+
+              <span className="signature-collection-sweep pointer-events-none absolute top-0 h-full w-[35%] -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+              <span className="relative">
+                {outOfStock
+                  ? "Sold Out"
+                  : "Order Now"}
+              </span>
+            </button>
+          </div>
+
+          {/* =========================================
+              DESKTOP ORDER NOW
+          ========================================= */}
+
+          <div className="mt-auto hidden pt-2.5 lg:block">
+
+            <button
+              type="button"
+              disabled={outOfStock}
+              onClick={(event) => {
+                event.stopPropagation();
+
+                onDirectOrder();
+              }}
+              className="group/button relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-[#632437] px-4 py-2.5 text-[6px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_24px_rgba(84,25,40,0.20)] transition duration-300 hover:-translate-y-0.5 hover:bg-[#4e1929] disabled:cursor-not-allowed disabled:opacity-40"
             >
 
               <span className="signature-collection-sweep pointer-events-none absolute top-0 h-full w-[30%] -skew-x-12 bg-gradient-to-r from-transparent via-white/30 to-transparent" />
@@ -598,13 +712,17 @@ function SignatureProductCard({
               />
 
               <span className="relative">
-                Shop Now
+                {outOfStock
+                  ? "Sold Out"
+                  : "Order Now"}
               </span>
 
-              <ChevronRight
-                size={9}
-                className="relative transition duration-300 group-hover/button:translate-x-1"
-              />
+              {!outOfStock && (
+                <ChevronRight
+                  size={9}
+                  className="relative transition duration-300 group-hover/button:translate-x-1"
+                />
+              )}
             </button>
           </div>
         </div>
@@ -671,8 +789,7 @@ function SignatureDetailModal({
     setActiveImage,
   ] = useState(
     product.images?.[0]
-      ?.imageUrl ||
-      null
+      ?.imageUrl || null
   );
 
   const [
@@ -695,8 +812,7 @@ function SignatureDetailModal({
   });
 
   const {
-    data:
-      reviewData,
+    data: reviewData,
     isLoading:
       reviewsLoading,
   } = useQuery({
@@ -734,8 +850,7 @@ function SignatureDetailModal({
     });
 
   const reviews =
-    reviewData?.reviews ||
-    [];
+    reviewData?.reviews || [];
 
   const finalPrice =
     product.discountPrice ??
@@ -745,6 +860,10 @@ function SignatureDetailModal({
     Number(
       product.stock || 0
     );
+
+  /* =====================================================
+     ADD TO CART
+  ===================================================== */
 
   const handleAddToCart =
     () => {
@@ -768,6 +887,10 @@ function SignatureDetailModal({
         setAdded(false);
       }, 1500);
     };
+
+  /* =====================================================
+     REVIEW
+  ===================================================== */
 
   const submitReview =
     (event) => {
@@ -810,7 +933,6 @@ function SignatureDetailModal({
         <div className="sticky top-0 z-30 flex items-center justify-between border-b border-[#eadcdf] bg-[#fffaf8]/95 px-4 py-3 backdrop-blur-xl sm:px-5">
 
           <div>
-
             <p className="text-[6px] font-bold uppercase tracking-[0.18em] text-[#8b4051]">
               KM Cares Signature
             </p>
@@ -825,7 +947,6 @@ function SignatureDetailModal({
             onClick={onClose}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-[#dbc5ca] bg-white text-[#742d40] transition duration-300 hover:rotate-90 hover:bg-[#632437] hover:text-white"
           >
-
             <X size={14} />
           </button>
         </div>
@@ -841,10 +962,13 @@ function SignatureDetailModal({
             <div className="flex min-h-[300px] items-center justify-center overflow-hidden rounded-[20px] border border-white/50 bg-white/25">
 
               {activeImage && (
-
                 <img
-                  src={activeImage}
-                  alt={product.name}
+                  src={
+                    activeImage
+                  }
+                  alt={
+                    product.name
+                  }
                   className="max-h-[290px] w-[94%] object-contain p-3"
                 />
               )}
@@ -854,14 +978,14 @@ function SignatureDetailModal({
 
             {product.images?.length >
               1 && (
-
               <div className="mt-3 flex gap-2 overflow-x-auto">
 
                 {product.images.map(
                   (image) => (
-
                     <button
-                      key={image.id}
+                      key={
+                        image.id
+                      }
                       type="button"
                       onClick={() =>
                         setActiveImage(
@@ -875,9 +999,10 @@ function SignatureDetailModal({
                           : "border-[#ddd0d3]"
                       }`}
                     >
-
                       <img
-                        src={image.imageUrl}
+                        src={
+                          image.imageUrl
+                        }
                         alt=""
                         className="h-full w-full object-cover"
                       />
@@ -905,7 +1030,6 @@ function SignatureDetailModal({
             </div>
 
             <h2 className="font-beauty mt-3 text-[31px] font-semibold leading-[0.98] text-[#52343c] sm:text-[36px]">
-
               {product.name}
             </h2>
 
@@ -922,14 +1046,13 @@ function SignatureDetailModal({
               />
 
               <span className="text-[7px] text-[#987f84]">
-
                 {Number(
                   reviewData
                     ?.averageRating ||
                     0
                 ).toFixed(1)}
-
-                {" "}(
+                {" "}
+                (
                 {reviewData
                   ?.reviewCount ||
                   0}
@@ -937,10 +1060,9 @@ function SignatureDetailModal({
               </span>
             </div>
 
-            {/* DESCRIPTION ONLY HERE */}
+            {/* DESCRIPTION */}
 
             <p className="mt-4 text-[9px] leading-5 text-[#7e686d]">
-
               {product.shortDescription ||
                 "A premium KM Cares signature essential created for your beauty ritual."}
             </p>
@@ -958,20 +1080,15 @@ function SignatureDetailModal({
               <div className="mt-1.5 flex items-center gap-2">
 
                 <span className="text-[22px] font-black text-[#71283a]">
-
                   Rs.{" "}
-
                   {Number(
                     finalPrice
                   ).toLocaleString()}
                 </span>
 
                 {product.discountPrice && (
-
                   <span className="text-[9px] text-[#b19da1] line-through">
-
                     Rs.{" "}
-
                     {Number(
                       product.originalPrice
                     ).toLocaleString()}
@@ -1016,12 +1133,12 @@ function SignatureDetailModal({
                   }
                   className="flex h-9 w-9 items-center justify-center rounded-full text-[#6d3542] hover:bg-[#f4e7e9]"
                 >
-
-                  <Minus size={12} />
+                  <Minus
+                    size={12}
+                  />
                 </button>
 
                 <span className="min-w-[38px] text-center text-[9px] font-bold">
-
                   {quantity}
                 </span>
 
@@ -1041,8 +1158,9 @@ function SignatureDetailModal({
                   }
                   className="flex h-9 w-9 items-center justify-center rounded-full text-[#6d3542] hover:bg-[#f4e7e9]"
                 >
-
-                  <Plus size={12} />
+                  <Plus
+                    size={12}
+                  />
                 </button>
               </div>
 
@@ -1060,15 +1178,20 @@ function SignatureDetailModal({
                     : "bg-[#632437] hover:bg-[#4e1929]"
                 } disabled:opacity-40`}
               >
-
                 {added ? (
                   <>
-                    <Check size={12} />
+                    <Check
+                      size={12}
+                    />
+
                     Added to Cart
                   </>
                 ) : (
                   <>
-                    <ShoppingBag size={12} />
+                    <ShoppingBag
+                      size={12}
+                    />
+
                     Add to Cart
                   </>
                 )}
@@ -1098,16 +1221,21 @@ function SignatureDetailModal({
               </h3>
 
               <form
-                onSubmit={submitReview}
+                onSubmit={
+                  submitReview
+                }
                 className="mt-4 space-y-3"
               >
 
                 <input
                   required
-                  value={form.name}
+                  value={
+                    form.name
+                  }
                   onChange={(event) =>
                     setForm({
                       ...form,
+
                       name:
                         event.target
                           .value,
@@ -1119,11 +1247,18 @@ function SignatureDetailModal({
 
                 <div className="flex items-center gap-1 rounded-[12px] border border-[#e1d0d4] bg-white px-3.5 py-3">
 
-                  {[1, 2, 3, 4, 5].map(
+                  {[
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                  ].map(
                     (rating) => (
-
                       <button
-                        key={rating}
+                        key={
+                          rating
+                        }
                         type="button"
                         onClick={() =>
                           setForm({
@@ -1132,7 +1267,6 @@ function SignatureDetailModal({
                           })
                         }
                       >
-
                         <Star
                           size={15}
                           className={
@@ -1150,10 +1284,13 @@ function SignatureDetailModal({
                 <textarea
                   required
                   rows="4"
-                  value={form.comment}
+                  value={
+                    form.comment
+                  }
                   onChange={(event) =>
                     setForm({
                       ...form,
+
                       comment:
                         event.target
                           .value,
@@ -1164,9 +1301,7 @@ function SignatureDetailModal({
                 />
 
                 {reviewMutation.isError && (
-
                   <p className="rounded-[9px] bg-red-50 px-3 py-2 text-[7px] text-red-500">
-
                     {reviewMutation.error
                       ?.response
                       ?.data
@@ -1176,12 +1311,13 @@ function SignatureDetailModal({
                 )}
 
                 {reviewMutation.isSuccess && (
-
                   <p className="flex items-center gap-1.5 rounded-[9px] bg-emerald-50 px-3 py-2 text-[7px] text-emerald-600">
+                    <Check
+                      size={10}
+                    />
 
-                    <Check size={10} />
-
-                    Review added successfully.
+                    Review added
+                    successfully.
                   </p>
                 )}
 
@@ -1192,7 +1328,6 @@ function SignatureDetailModal({
                   }
                   className="rounded-full bg-[#632437] px-5 py-3 text-[7px] font-bold uppercase tracking-[0.13em] text-white hover:bg-[#4e1929] disabled:opacity-50"
                 >
-
                   {reviewMutation.isPending
                     ? "Submitting..."
                     : "Submit Review"}
@@ -1207,7 +1342,6 @@ function SignatureDetailModal({
               <div className="flex items-end justify-between">
 
                 <div>
-
                   <p className="text-[6px] font-bold uppercase tracking-[0.17em] text-[#8a4051]">
                     Customer Notes
                   </p>
@@ -1218,18 +1352,14 @@ function SignatureDetailModal({
                 </div>
 
                 <span className="text-[7px] text-[#9b898d]">
-
                   {reviews.length}
                 </span>
               </div>
 
               {reviewsLoading ? (
-
                 <div className="mt-4 h-24 animate-pulse rounded-[13px] bg-[#efe4e4]" />
-
               ) : reviews.length ===
                 0 ? (
-
                 <div className="mt-4 rounded-[14px] border border-dashed border-[#dbc5ca] bg-white px-4 py-8 text-center">
 
                   <Quote
@@ -1238,33 +1368,32 @@ function SignatureDetailModal({
                   />
 
                   <p className="font-beauty mt-2 text-[17px] text-[#6b4c53]">
-                    Be the first to review.
+                    Be the first to
+                    review.
                   </p>
                 </div>
-
               ) : (
-
                 <div className="mt-4 max-h-[270px] space-y-2.5 overflow-y-auto pr-1">
 
                   {reviews.map(
                     (review) => (
-
                       <article
-                        key={review.id}
+                        key={
+                          review.id
+                        }
                         className="rounded-[13px] border border-[#e3d4d7] bg-white p-3.5"
                       >
 
                         <div className="flex items-start justify-between gap-2">
 
                           <div>
-
                             <p className="text-[8px] font-bold text-[#5b3c44]">
-
-                              {review.name}
+                              {
+                                review.name
+                              }
                             </p>
 
                             <div className="mt-1">
-
                               <Stars
                                 value={
                                   review.rating
@@ -1275,7 +1404,6 @@ function SignatureDetailModal({
                           </div>
 
                           <span className="text-[5px] text-[#ad9b9e]">
-
                             {new Date(
                               review.createdAt
                             ).toLocaleDateString()}
@@ -1283,8 +1411,9 @@ function SignatureDetailModal({
                         </div>
 
                         <p className="mt-2.5 text-[7px] leading-4 text-[#806b70]">
-
-                          {review.comment}
+                          {
+                            review.comment
+                          }
                         </p>
                       </article>
                     )
@@ -1317,13 +1446,14 @@ function Stars({
         length: 5,
       }).map(
         (_, index) => (
-
           <Star
             key={index}
             size={size}
             className={
               index <
-              Math.round(rating)
+              Math.round(
+                rating
+              )
                 ? "fill-[#d0a04b] text-[#d0a04b]"
                 : "text-[#ddd1d2]"
             }
@@ -1343,7 +1473,6 @@ function SignatureCollectionSkeleton() {
     <main className="min-h-screen bg-[#fffaf8]">
 
       <section className="border-b border-[#eddddf] px-4 py-8">
-
         <div className="mx-auto max-w-[1400px]">
 
           <div className="mx-auto h-4 w-32 animate-pulse rounded-full bg-[#efe2e4]" />
@@ -1360,7 +1489,6 @@ function SignatureCollectionSkeleton() {
             length: 8,
           }).map(
             (_, index) => (
-
               <div
                 key={index}
                 className="h-[360px] animate-pulse rounded-[27px] bg-[#f1e6e5] sm:h-[375px]"
